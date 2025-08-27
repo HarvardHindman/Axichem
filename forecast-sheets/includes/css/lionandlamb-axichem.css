@@ -1,0 +1,215 @@
+.woocommerce-MyAccount-content-wrapper {
+    padding: var(--sections-padding, 16px 30px);
+    padding-top: 0 !important;
+}
+.woocommerce-MyAccount-content p, .woocommerce-MyAccount-content li {
+    color: #2d2d2d !important;
+}
+.sheet-saved {
+    background: #8BC34A;
+    padding: 12px 20px;
+    font-weight: bold;
+    margin-bottom: 10px !important;
+}
+p.sheet-saved {
+    color: white !important;
+}
+.forecast_header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+    background: #ffd428;
+    padding: 10px 20px;
+    border-radius: 7px;
+}
+.axichem-form {
+    margin-bottom: 50px;
+}
+
+div#myTable_filter {
+    margin-bottom: 20px;
+}
+
+td.product__name.sorting_1 {
+    padding-left: 10px !important;
+}
+
+.product_name:hover {
+    text-decoration: underline;
+}
+
+.data-quantity {
+    max-width: 100% !important;
+    text-align: center;
+}
+
+.forecast-buttons {
+    display: flex;
+    margin-top: 20px;
+    grid-gap: 20px;
+}
+
+input.forecast-buttons__submit {
+    background: #239127 !important;
+    color: white !important;
+}
+input#saveButton:hover {
+    background: #ffd400;
+    opacity: 0.7;
+    color: black;
+}
+hr.forecast-divider {
+    margin: 20px !important;
+    background-color: #f0f0f0 !important;
+}
+
+.forecast-buttons>* {
+    width: 50%;
+    transition: all 250ms !important;
+    border-radius: 5px !important;
+}
+
+button#export-button {
+    background: #3a3a3a;
+    color: white;
+    transition: all 250ms;
+}
+
+button#export-button:hover {
+    opacity: 0.7;
+}
+
+.customers-message {
+    background: #8bc34a7d;
+    padding: 30px;
+    border-radius: 5px;
+    margin-bottom: 30px;
+    position: relative;
+    display: none;
+}
+
+.customers-message h4 {
+    margin-bottom: 10px;
+}
+
+.customers-message p {
+    margin: 0;
+    font-size: 15px;
+    line-height: 1.6rem;
+}
+
+.closeMessage {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+}
+
+.closeMessage svg {
+    font-size: 24px;
+    transition: all 250ms;
+    cursor: pointer;
+    border-radius: 50px;
+    background-color: white;
+    height: 25px;
+    width: 25px;
+    padding: 4px;
+}
+
+.closeMessage svg:hover {
+    opacity: 0.6;
+}
+
+div#loadingMessage {
+    font-size: 16px;
+    font-weight: 500;
+    background: aliceblue;
+    text-align: center;
+    line-height: 2rem;
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+}
+
+/* Help Tab */
+.help__contact-details div {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+    font-size: 16px;
+}
+
+/* My Account Dashboard page */
+.account-dashboard h5 {
+    margin-bottom: 6px;
+}
+
+
+.account-dashboard p {
+    font-weight: 400;
+    margin: 0;
+}
+
+.account-dashboard a {
+    font-weight: 600;
+}
+
+.dashboard-divider {
+    width: 100px;
+    height: 3px;
+    background: #ffd428;
+    margin: 20px 0;
+}
+
+/* Instructions page */
+.forecast__instructions h5 {
+    font-weight: 500;
+    font-size: 16px;
+    margin-bottom: 10px;
+}
+
+.forecast__instructions h5:before {
+    content: '• ';
+    color: #65895d;
+}
+
+.forecast__instructions li,
+.forecast__instructions p {
+    font-weight: 400;
+    line-height: 1.6rem;
+}
+
+.forecast__instructions ol {
+    margin-left: 35px;
+    margin-top: 0px;
+}
+
+/* Forecast Help */
+.forecast__help p {
+    font-weight: 400;
+    line-height: 1.6rem;
+}
+
+/* Responsive */
+@media (max-width:768px) {
+	.woocommerce-MyAccount-content-wrapper {
+		padding: 0 10px !important
+	}
+    .forecast_header {
+        flex-flow: column;
+        gap: 10px;
+    }
+
+    .product__id {
+        display: none;
+    }
+
+    .forecast-buttons {
+        flex-flow: column;
+        gap: 7px;
+    }
+
+    .forecast-buttons>* {
+        width: 100%
+    }
+}
