@@ -21,7 +21,7 @@ function reorder_account_menu($items)
     return array(
         'dashboard'          => __('Dashboard', 'woocommerce'),
         'forecast-sheet'     => __('Forecast Sheets', 'woocommerce'),
-        'price-list'         => __('Price List', 'woocommerce'),
+		'price-list'         => __('Price List', 'woocommerce'),
         'forecast-instructions' => __('Instructions', 'woocommerce'),
         'forecast-help'         => __('Forecast Help', 'woocommerce'),
         'edit-account'       => __('Edit Account', 'woocommerce'),
@@ -45,7 +45,7 @@ add_shortcode('customerMessage', 'customerMessage');
 // Display content for Forecast tab 
 function custom_account_tab_content()
 {
-    $selectedYear = date('Y');   // Default to the current year
+    $selectedYear = '2024';   // Default to the current year (e.g., '2024')
 
     // 1. Save the form
     if (isset($_POST['save_form'])) {
@@ -100,9 +100,16 @@ function custom_account_tab_content()
                 $product_id = sanitize_text_field($product_id);
                 $product_name = sanitize_text_field($product_name);
 
+                // Loop through each month for this product
                 foreach ($month_quantities as $month => $quantity) {
+                    $month = sanitize_text_field($month);
                     $quantity = intval($quantity);
-                    
+
+                    // Skip processing if quantity is 0
+                    if ($quantity <= 0) {
+                        continue;
+                    }
+
                     $existing_user_row = $wpdb->get_row(
                         $wpdb->prepare(
                             "SELECT * FROM $user_table_name WHERE user_id = %d AND product_id = %s AND in_month = %s AND in_year = %s",
@@ -192,13 +199,12 @@ function custom_account_tab_content()
         }
     }
 
-
-
     // 2. Send to Axichem
     if (isset($_POST['submit_form'])) {
         $user_id = get_current_user_id();
         $user_name = wp_get_current_user()->user_login;
         $product_quantities = $_POST['product_quantity'];
+        $selectedMonth = isset($_POST['selected_email_month']) ? sanitize_text_field($_POST['selected_email_month']) : '01';
 
         if (is_array($product_quantities)) {
             global $wpdb;
@@ -242,15 +248,23 @@ function custom_account_tab_content()
                 dbDelta($sql);
             }
 
+            // First, save all the data
             foreach ($product_quantities as $product_id => $month_quantities) {
                 $product = wc_get_product($product_id);
                 $product_name = $product ? $product->get_name() : '';
                 $product_id = sanitize_text_field($product_id);
                 $product_name = sanitize_text_field($product_name);
 
+                // Loop through each month for this product
                 foreach ($month_quantities as $month => $quantity) {
+                    $month = sanitize_text_field($month);
                     $quantity = intval($quantity);
-                    
+
+                    // Skip processing if quantity is 0
+                    if ($quantity <= 0) {
+                        continue;
+                    }
+
                     $existing_user_row = $wpdb->get_row(
                         $wpdb->prepare(
                             "SELECT * FROM $user_table_name WHERE user_id = %d AND product_id = %s AND in_month = %s AND in_year = %s",
@@ -336,98 +350,85 @@ function custom_account_tab_content()
                 }
             }
 
+            // Gather the saved data for the selected month for email
+            $data_query = $wpdb->prepare(
+                "SELECT * FROM $user_table_name WHERE user_id = %d AND in_year = %s AND in_month = %s AND quantity > 0 ORDER BY product_name",
+                $user_id,
+                $selectedYear,
+                $selectedMonth
+            );
+
+            $data = $wpdb->get_results($data_query);
+
+            // Define an array to map month numbers to month names
+            $monthNames = [
+                '01' => 'January',
+                '02' => 'February',
+                '03' => 'March',
+                '04' => 'April',
+                '05' => 'May',
+                '06' => 'June',
+                '07' => 'July',
+                '08' => 'August',
+                '09' => 'September',
+                '10' => 'October',
+                '11' => 'November',
+                '12' => 'December',
+            ];
+
+            // Create an email message with the saved data and selected month
+            $admin_subject = 'Customer has saved a Forecast Sheet';
+
+            // Start the HTML table
+            $email_message = '<html><body>';
+            $email_message .= '<h2>A Customer has sent an order: ' . $user_name . ', for period: ' . $monthNames[$selectedMonth] . ' ' . $selectedYear . '</h2>';
+            if (!empty($poNumber)) {
+                $email_message .= '<h4>PO Number: ' . $poNumber . '</h4>';
+            };
+            $email_message .= '<table border="1">';
+            $email_message .= '<tr><th>Product ID</th><th>Product Name</th><th>Quantity</th></tr>';
+
+            foreach ($data as $row) {
+                $email_message .= '<tr>';
+                $email_message .= '<td class="product__id">' . $row->product_id . '</td>';
+                $email_message .= '<td>' . $row->product_name . '</td>';
+                $email_message .= '<td>' . $row->quantity . '</td>';
+                $email_message .= '</tr>';
+            }
+
+            // End the HTML table and email message
+            $email_message .= '</table>';
+            $email_message .= '</body></html>';
+
+            // Send email to the admin
+            $admin_emails = array(
+                get_option('admin_email'), // Admin's email
+                'orders@axichem.com.au',
+            );
+            wp_mail($admin_emails, $admin_subject, $email_message, array('Content-Type: text/html'));
+            
             echo '<p class="sheet-saved">Forecast has been saved and sent to Axichem.</p>';
         }
-
-                // Gather the saved data for the email
-        $saved_data = $wpdb->get_results(
-            $wpdb->prepare(
-                "SELECT * FROM $user_table_name WHERE user_id = %d AND in_year = %s ORDER BY product_name",
-                $user_id,
-                $selectedYear
-            )
-        );
-
-        // Organize data by product for the email
-        $products_data = array();
-        foreach ($saved_data as $row) {
-            if (!isset($products_data[$row->product_id])) {
-                $products_data[$row->product_id] = array(
-                    'name' => $row->product_name,
-                    'months' => array()
-                );
-            }
-            $products_data[$row->product_id]['months'][$row->in_month] = $row->quantity;
-        }
-
-        // Create an email message with the saved data
-        $admin_subject = 'Customer has saved a Forecast Sheet';
-
-        // Start the HTML table
-        $email_message = '<html><body>';
-        $email_message .= '<h2>A Customer has sent an order: ' . $user_name . ', for year: ' . $selectedYear . '</h2>';
-        if (!empty($poNumber)) {
-            $email_message .= '<h4>PO Number: ' . $poNumber . '</h4>';
-        };
-        
-        // Create a table with months as columns
-        $email_message .= '<table border="1">';
-        $email_message .= '<tr><th>Product ID</th><th>Product Name</th><th>Jan</th><th>Feb</th><th>Mar</th><th>Apr</th><th>May</th><th>Jun</th><th>Jul</th><th>Aug</th><th>Sep</th><th>Oct</th><th>Nov</th><th>Dec</th><th>Total</th></tr>';
-
-        foreach ($products_data as $product_id => $product_data) {
-            $email_message .= '<tr>';
-            $email_message .= '<td class="product__id">' . $product_id . '</td>';
-            $email_message .= '<td>' . $product_data['name'] . '</td>';
-            
-            // Initialize total for this product
-            $product_total = 0;
-            
-            // Add quantities for each month
-            for ($m = 1; $m <= 12; $m++) {
-                $month = sprintf('%02d', $m);
-                $qty = isset($product_data['months'][$month]) ? $product_data['months'][$month] : 0;
-                $email_message .= '<td>' . $qty . '</td>';
-                $product_total += $qty; // Add to product total
-            }
-            
-            // Add the total column
-            $email_message .= '<td style="font-weight:bold; background-color:#f9f9f9;">' . $product_total . '</td>';
-            
-            $email_message .= '</tr>';
-        }
-
-        // End the HTML table and email message
-        $email_message .= '</table>';
-        $email_message .= '</body></html>';
-
-        // Send email to the admin
-        $admin_emails = array(
-            get_option('admin_email'), // Admin's email
-            'orders@axichem.com.au',
-        );
-        wp_mail($admin_emails, $admin_subject, $email_message, array('Content-Type: text/html'));
     }
 
     // 3. Page Content
-    
-    // No longer loading all products automatically
-    // Products will be added by the user via the product search
+    $args = array(
+        'post_type' => 'product',
+        'posts_per_page' => -1,
+        'post_status' => 'publish',
+        'order' => 'ASC',
+        'orderby' => 'title'
+    );
+    $query = new WP_Query($args);
 
 ?>
     <div class="forecast_header">
         <h3>Forecast Sheet</h3>
         <div>
             <select id="year" name="selectedYear">
-                <?php
-                $currentYear = date('Y');
-                $startYear = 2024; // Start from 2024
-                $endYear = $currentYear + 3; // Show current year plus 3 years ahead
-                
-                for ($year = $startYear; $year <= $endYear; $year++) {
-                    $selected = ($year == $selectedYear) ? 'selected' : '';
-                    echo "<option value=\"{$year}\" {$selected}>{$year}</option>";
-                }
-                ?>
+                <option value="2024" selected>2024</option>
+                <option value="2025">2025</option>
+                <option value="2026">2026</option>
             </select>
         </div>
     </div>
@@ -435,231 +436,78 @@ function custom_account_tab_content()
     <div id="loadingMessage" style="display: none;">
         Fetching data...
     </div>
-    
-    <!-- Product Search Section -->
-    <div class="product-search-container" style="margin-bottom: 20px;">
-        <h4>Add Products to Your Forecast</h4>
-        <p style="margin-bottom: 15px; color: #555;">Start typing to see product suggestions or click "Browse All Products" to view the complete list.</p>
-        <div class="product-search-form" style="display: flex; flex-wrap: wrap; gap: 10px; align-items: center;">
-            <div style="position: relative; flex-grow: 1;">
-                <label for="product-search" style="display: block; margin-bottom: 5px; font-weight: bold;">Search Products</label>
-                <div style="display: flex; position: relative;">
-                    <input type="text" id="product-search" placeholder="Start typing to search products..." style="width: 100%; padding: 8px; font-size: 14px;">
-                    <button type="button" id="search-button" style="padding: 8px 15px; margin-left: 5px;">Search</button>
-                </div>
-                <!-- Separate container for suggestions dropdown with fixed positioning -->
-                <div id="product-suggestions-container" style="position: relative; width: 100%;">
-                    <div id="product-suggestions" style="position: absolute; width: 100%; background: white; border: 1px solid #ddd; z-index: 9999; box-shadow: 0 4px 8px rgba(0,0,0,0.1); display: none; max-height: 300px; overflow-y: auto;"></div>
-                </div>
-            </div>
-            <div style="margin-top: 25px;">
-                <button type="button" id="browse-all-button" style="padding: 8px 15px; background-color: #f7f7f7; border: 1px solid #ccc; border-radius: 3px;">Browse All Products</button>
-            </div>
-        </div>
-        <div id="search-results" style="margin-top: 10px; display: none;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
-                <h5 style="margin: 0;">Search Results</h5>
-                <button id="close-search-results" type="button" style="background: none; border: none; font-size: 16px; cursor: pointer; color: #666;">&times;</button>
-            </div>
-            <div id="results-container" style="max-height: 300px; overflow-y: auto; border: 1px solid #ddd; padding: 10px;"></div>
-        </div>
-    </div>    <!-- Custom CSS for table width and responsiveness -->
-    <style>
-        .forecast_body {
-            max-width: 100%;
-            overflow-x: auto;
-        }
-        #myTable {
-            min-width: 100%;
-            table-layout: auto;
-            margin-bottom: 20px;
-        }
-        #myTable .product__name {
-            min-width: 220px;
-            max-width: 300px;
-        }
-        #myTable .product__id {
-            width: 80px;
-        }
-        #myTable .product__qty {
-            width: 60px;
-            min-width: 60px;
-        }
-        #myTable input.data-quantity {
-            width: 100%;
-            min-width: 45px;
-            text-align: center;
-            padding: 5px 2px;
-        }
-        /* Make sure all month columns have equal width */
-        #myTable th, #myTable td {
-            white-space: nowrap;
-            padding: 8px 5px;
-        }
-        /* Improve responsive behavior */
-        @media screen and (max-width: 1200px) {
-            .forecast_body {
-                overflow-x: scroll;
-            }
-            #myTable {
-                min-width: 1200px;
-            }
-        }
-        
-        /* Style adjustments for the DataTables wrapper */
-        .dataTables_wrapper {
-            width: 100%;
-            overflow-x: auto;
-            padding-bottom: 15px;
-        }
-        
-        /* Better styling for number inputs */
-        input.data-quantity[type="number"] {
-            -moz-appearance: textfield; /* Firefox */
-        }
-        
-        input.data-quantity[type="number"]::-webkit-inner-spin-button,
-        input.data-quantity[type="number"]::-webkit-outer-spin-button {
-            -webkit-appearance: none;
-            margin: 0;
-        }
-        
-        /* Fix for DataTables horizontal scrolling */
-        .dataTables_scrollBody {
-            overflow-x: visible !important;
-            overflow-y: auto !important;
-        }
-        
-        /* Empty state message styling */
-        #no-products-message td {
-            padding: 30px;
-            text-align: center;
-            background-color: #f9f9f9;
-            font-size: 15px;
-            color: #555;
-        }
-        
-        /* Search container styling */
-        .product-search-container {
-            background-color: #f9f9f9;
-            border-radius: 5px;
-            padding: 15px;
-            margin-bottom: 25px;
-        }
-        
-        /* Product suggestions styling */
-        #product-suggestions {
-            border-radius: 0 0 4px 4px;
-            z-index: 9999;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-            background-color: white;
-            min-width: 250px;
-            border: 1px solid #ddd;
-        }
-        
-        .product-suggestion {
-            padding: 8px 10px;
-            border-bottom: 1px solid #eee;
-            cursor: pointer;
-            transition: background-color 0.2s;
-        }
-        
-        .product-suggestion:hover {
-            background-color: #f0f7ff;
-        }
-        
-        .product-suggestion:last-child {
-            border-bottom: none;
-        }
-        
-        .suggestion-highlighted {
-            background-color: #f0f7ff;
-            border-left: 3px solid #0073aa;
-            padding-left: 7px !important;
-        }
-        
-        .suggestions-header {
-            padding: 5px 10px;
-            background-color: #f5f5f5;
-            font-size: 12px;
-            color: #666;
-            border-bottom: 1px solid #ddd;
-        }
-        
-        /* Spinner animation for loading indicators */
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        
-        /* Add button styling */
-        .add-product-button {
-            background-color: #0073aa;
-            color: white;
-            border: none;
-            border-radius: 3px;
-            cursor: pointer;
-            transition: background-color 0.2s;
-        }
-        
-        .add-product-button:hover:not([disabled]) {
-            background-color: #005d87;
-        }
-        
-        .add-product-button[disabled] {
-            background-color: #ccc;
-            cursor: default;
-        }
-    </style>
 
     <div class="forecast_body axichem-form">
-        <form id="ForecastForm">
+        <form id="ForecastForm" method="post" action="">
             <table id="myTable" class="display responsive" style="width:100%">
                 <thead>
                     <tr>
-                        <th class="product__id desktop" style="text-align:center; min-width:80px;">Product ID</th>
-                        <th data-priority="1" style="min-width:250px;">Product Name</th>
-                        <th data-priority="2" style="text-align:center; min-width:45px;">Jan</th>
-                        <th data-priority="2" style="text-align:center; min-width:45px;">Feb</th>
-                        <th data-priority="2" style="text-align:center; min-width:45px;">Mar</th>
-                        <th data-priority="2" style="text-align:center; min-width:45px;">Apr</th>
-                        <th data-priority="2" style="text-align:center; min-width:45px;">May</th>
-                        <th data-priority="2" style="text-align:center; min-width:45px;">Jun</th>
-                        <th data-priority="2" style="text-align:center; min-width:45px;">Jul</th>
-                        <th data-priority="2" style="text-align:center; min-width:45px;">Aug</th>
-                        <th data-priority="2" style="text-align:center; min-width:45px;">Sep</th>
-                        <th data-priority="2" style="text-align:center; min-width:45px;">Oct</th>
-                        <th data-priority="2" style="text-align:center; min-width:45px;">Nov</th>
-                        <th data-priority="2" style="text-align:center; min-width:45px;">Dec</th>
-                        <th data-priority="1" style="text-align:center; min-width:70px; background-color: #f9f9f9;">Total</th>
-                        <th data-priority="1" style="text-align:center; min-width:30px;">Action</th>
+                        <th class="product__id desktop" style="text-align:center">Product ID</th>
+                        <th data-priority="1">Product Name</th>
+                        <th data-priority="2" style="text-align:center">Jan</th>
+                        <th data-priority="2" style="text-align:center">Feb</th>
+                        <th data-priority="2" style="text-align:center">Mar</th>
+                        <th data-priority="2" style="text-align:center">Apr</th>
+                        <th data-priority="2" style="text-align:center">May</th>
+                        <th data-priority="2" style="text-align:center">Jun</th>
+                        <th data-priority="2" style="text-align:center">Jul</th>
+                        <th data-priority="2" style="text-align:center">Aug</th>
+                        <th data-priority="2" style="text-align:center">Sep</th>
+                        <th data-priority="2" style="text-align:center">Oct</th>
+                        <th data-priority="2" style="text-align:center">Nov</th>
+                        <th data-priority="2" style="text-align:center">Dec</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <!-- Products will be added here dynamically when selected by the user -->
-                    <tr id="no-products-message">
-                        <td colspan="16" style="text-align:center; padding: 20px;">
-                            <div style="padding: 30px 15px;">
-                              <div style="font-size: 18px; margin-bottom: 10px; color: #666;">No products added yet</div>
-                              <div style="font-size: 15px; color: #888; margin-bottom: 15px;">Use the search above to find and add products to your forecast</div>
-                              <button type="button" id="browse-products-button" style="padding: 8px 15px; background-color: #0073aa; color: white; border: none; border-radius: 3px; cursor: pointer;">Browse Products</button>
-                            </div>
-                        </td>
-                    </tr>
+                    <?php while ($query->have_posts()) {
+                        $query->the_post();
+                        $product_id = get_the_ID();
+                    ?>
+                        <tr product-id="<?php echo $product_id; ?>">
+                            <td class="product__id" style="text-align:center"><?php echo $product_id; ?></td>
+                            <td class="product__name"><?php the_title(); ?></td>
+                            <td class="product__qty" style="text-align:center"><input class="data-quantity" type="number" name="product_quantity[<?php echo $product_id; ?>][01]" value="0" min="0"></td>
+                            <td class="product__qty" style="text-align:center"><input class="data-quantity" type="number" name="product_quantity[<?php echo $product_id; ?>][02]" value="0" min="0"></td>
+                            <td class="product__qty" style="text-align:center"><input class="data-quantity" type="number" name="product_quantity[<?php echo $product_id; ?>][03]" value="0" min="0"></td>
+                            <td class="product__qty" style="text-align:center"><input class="data-quantity" type="number" name="product_quantity[<?php echo $product_id; ?>][04]" value="0" min="0"></td>
+                            <td class="product__qty" style="text-align:center"><input class="data-quantity" type="number" name="product_quantity[<?php echo $product_id; ?>][05]" value="0" min="0"></td>
+                            <td class="product__qty" style="text-align:center"><input class="data-quantity" type="number" name="product_quantity[<?php echo $product_id; ?>][06]" value="0" min="0"></td>
+                            <td class="product__qty" style="text-align:center"><input class="data-quantity" type="number" name="product_quantity[<?php echo $product_id; ?>][07]" value="0" min="0"></td>
+                            <td class="product__qty" style="text-align:center"><input class="data-quantity" type="number" name="product_quantity[<?php echo $product_id; ?>][08]" value="0" min="0"></td>
+                            <td class="product__qty" style="text-align:center"><input class="data-quantity" type="number" name="product_quantity[<?php echo $product_id; ?>][09]" value="0" min="0"></td>
+                            <td class="product__qty" style="text-align:center"><input class="data-quantity" type="number" name="product_quantity[<?php echo $product_id; ?>][10]" value="0" min="0"></td>
+                            <td class="product__qty" style="text-align:center"><input class="data-quantity" type="number" name="product_quantity[<?php echo $product_id; ?>][11]" value="0" min="0"></td>
+                            <td class="product__qty" style="text-align:center"><input class="data-quantity" type="number" name="product_quantity[<?php echo $product_id; ?>][12]" value="0" min="0"></td>
+                        </tr>
+                    <?php }
+                    ?>
                 </tbody>
             </table>
             <div class="forecast-buttons">
                 <input type="hidden" name="selectedYear" value="<?php echo esc_attr($selectedYear); ?>">
-                <button id="saveButton" type="button">Save</button>
-                <button id="export-button" type="button">Download Spreadsheet</button>
+                <input id="saveButton" type="submit" name="save_form" value="Save"></input>
+                <button id="export-button">Download Spreadsheet</button>
             </div>
             <hr class="forecast-divider" />
-            <p style="margin:0; font-weight:400">Ready to order? Add a PO number if required, if submitting without a PO leave this blank, then click ‘Send to Axichem’.<br>Your Axichem rep will be in touch to confirm your order.</p>
+            <p style="margin:0; font-weight:400">Ready to order? Select a month, add a PO number if required (if submitting without a PO leave this blank), then click 'Send to Axichem'.<br>Your Axichem rep will be in touch to confirm your order.</p>
             <div class="forecast-buttons">
+                <select name="selected_email_month">
+                    <option value="01">January</option>
+                    <option value="02">February</option>
+                    <option value="03">March</option>
+                    <option value="04">April</option>
+                    <option value="05">May</option>
+                    <option value="06">June</option>
+                    <option value="07">July</option>
+                    <option value="08">August</option>
+                    <option value="09">September</option>
+                    <option value="10">October</option>
+                    <option value="11">November</option>
+                    <option value="12">December</option>
+                </select>
                 <input type="text" name="poNumber" value="" placeholder="PO Number (optional)">
-                <button type="button" class="forecast-buttons__submit">Send to Axichem</button>
+                <input class="forecast-buttons__submit" type="submit" name="submit_form" value="Send to Axichem">
             </div>
-            <div class="sheet-saved" style="display:none;"></div>
         </form>
         <!-- Export Data with Javascript -->
         <script>
@@ -672,29 +520,33 @@ function custom_account_tab_content()
                         isExporting = true;
 
                         // Create headers for the CSV
-                        const headers = ['Product ID', 'Product Name', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec', 'Total'];
+                        const headers = ['Product ID', 'Product Name', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
                         const table = document.getElementById('myTable');
-                        const rows = Array.from(table.querySelectorAll('tbody tr:not(#no-products-message)'));
+                        const rows = Array.from(table.querySelectorAll('tr'));
 
                         // Get username
                         const userName = document.querySelector('.ast-username strong').innerHTML;
 
                         // Get the selected year element
                         const select = document.getElementById('year');
-                        const selectedYearName = select.options[select.selectedIndex].text;
+                        const selectedOption = select.options[select.selectedIndex];
+                        const selectedYearName = selectedOption.text;
 
                         // Filter rows to include only those with at least one quantity > 0
                         const filteredRows = rows.filter(row => {
-                            const quantityInputs = row.querySelectorAll('input[type="number"]');
-                            let hasQuantity = false;
-                            quantityInputs.forEach(input => {
-                                const quantityValue = parseInt(input.value, 10);
-                                if (!isNaN(quantityValue) && quantityValue > 0) {
-                                    hasQuantity = true;
-                                }
-                            });
-                            return hasQuantity;
+                            const quantityInputs = row.querySelectorAll('td input[type="number"]');
+                            if (quantityInputs && quantityInputs.length > 0) {
+                                let hasValue = false;
+                                quantityInputs.forEach(input => {
+                                    const quantityValue = parseInt(input.value, 10);
+                                    if (!isNaN(quantityValue) && quantityValue > 0) {
+                                        hasValue = true;
+                                    }
+                                });
+                                return hasValue;
+                            }
+                            return false;
                         });
 
                         // Extract filtered table data and format as CSV
@@ -705,12 +557,18 @@ function custom_account_tab_content()
 
                         // Add the data rows
                         filteredRows.forEach(row => {
-                            const productId = row.querySelector('.product__id').textContent;
-                            const productName = row.querySelector('.product__name').textContent;
-                            const quantities = Array.from(row.querySelectorAll('input[type="number"]')).map(input => input.value);
-                            const total = row.querySelector('.product__total').textContent;
+                            const columns = Array.from(row.querySelectorAll('td'));
+                            const productId = columns[0].textContent;
+                            const productName = columns[1].textContent;
+                            const quantities = [];
                             
-                            data.push([productId, '"' + productName + '"', ...quantities, total].join(','));
+                            // Get all quantity inputs (12 months)
+                            for (let i = 2; i < columns.length; i++) {
+                                const input = columns[i].querySelector('input[type="number"]');
+                                quantities.push(input ? input.value : '0');
+                            }
+                            
+                            data.push([productId, productName, ...quantities].join(','));
                         });
 
                         // Create a Blob containing the CSV data
@@ -721,7 +579,7 @@ function custom_account_tab_content()
                         // Create a download link
                         const a = document.createElement('a');
                         a.href = window.URL.createObjectURL(blob);
-                        a.download = 'Forecast_' + selectedYearName + '_' + userName + '.csv';
+                        a.download = 'Annual_Forecast_' + selectedYearName + '_' + userName + '.csv';
 
                         // Programmatically click the link to trigger the download
                         a.click();
@@ -736,9 +594,12 @@ function custom_account_tab_content()
                     }
                 });
 
-                // Add an event listener to detect changes in the select input for year
+                // Add an event listener to detect changes in the select input
                 jQuery(document).on('change', '#year', function() {
-                    // Year change is handled by the JS file
+                    // Update year when changing
+                    var selectedYear = jQuery('#year').val();
+                    jQuery('input[name="selectedYear"]').val(selectedYear);
+                    jQuery(".sheet-saved").hide();
                 });
             });
         </script>
@@ -747,5 +608,82 @@ function custom_account_tab_content()
 }
 add_action('woocommerce_account_forecast-sheet_endpoint', 'custom_account_tab_content');
 
-// The populate_all_product_quantities function is now defined in the main plugin file
-// to avoid function redeclaration issues
+// New function to populate all product quantities for all months in a year
+function populate_all_product_quantities()
+{
+    global $wpdb;
+
+    $user_id = get_current_user_id();
+    $selectedYear = sanitize_text_field($_POST['selectedYear']);
+    $user_table_name = $wpdb->prefix . 'forecast_sheets';
+
+    // Fetch data from the database for the current user and year (all months)
+    $data_query = $wpdb->prepare(
+        "SELECT product_id, in_month, quantity FROM $user_table_name WHERE user_id = %d AND in_year = %s",
+        $user_id,
+        $selectedYear
+    );
+
+    $data = $wpdb->get_results($data_query);
+
+    // Create a nested associative array to store product quantities for all months
+    $product_quantities = array();
+
+    foreach ($data as $row) {
+        $product_id = $row->product_id;
+        $month = $row->in_month;
+        $quantity = $row->quantity;
+        
+        // Initialize the product array if it doesn't exist
+        if (!isset($product_quantities[$product_id])) {
+            $product_quantities[$product_id] = array();
+        }
+        
+        // Store the quantity for this product and month
+        $product_quantities[$product_id][$month] = $quantity;
+    }
+
+    // Return the product quantities as a JSON object
+    wp_send_json($product_quantities);
+}
+
+// Hook this function to an AJAX action
+add_action('wp_ajax_populate_all_product_quantities', 'populate_all_product_quantities');
+add_action('wp_ajax_nopriv_populate_all_product_quantities', 'populate_all_product_quantities');
+
+// Keep the original populate_product_quantities function for backward compatibility
+function populate_product_quantities()
+{
+    global $wpdb;
+
+    $user_id = get_current_user_id();
+    $selectedMonth = sanitize_text_field($_POST['selectedMonth']);
+    $selectedYear = sanitize_text_field($_POST['selectedYear']);
+    $user_table_name = $wpdb->prefix . 'forecast_sheets';
+
+    // Fetch data from the database for the current user, month, and year
+    $data_query = $wpdb->prepare(
+        "SELECT product_id, quantity FROM $user_table_name WHERE user_id = %d AND in_month = %s AND in_year = %s",
+        $user_id,
+        $selectedMonth,
+        $selectedYear
+    );
+
+    $data = $wpdb->get_results($data_query);
+
+    // Create an associative array to store product quantities
+    $product_quantities = array();
+
+    foreach ($data as $row) {
+        $product_id = $row->product_id;
+        $quantity = $row->quantity;
+        $product_quantities[$product_id] = $quantity;
+    }
+
+    // Return the product quantities as a JSON object
+    wp_send_json($product_quantities);
+}
+
+// Hook this function to an AJAX action
+add_action('wp_ajax_populate_product_quantities', 'populate_product_quantities');
+add_action('wp_ajax_nopriv_populate_product_quantities', 'populate_product_quantities');
