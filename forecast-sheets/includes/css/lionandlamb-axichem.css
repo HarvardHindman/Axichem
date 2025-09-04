@@ -3,26 +3,33 @@
     padding-top: 0 !important;
 }
 .woocommerce-MyAccount-content p, .woocommerce-MyAccount-content li {
-    color: #2d2d2d !important;
+    color: #333 !important;
 }
+/* This style is now handled in frontend-forecast.php for better visual clarity
 .sheet-saved {
-    background: #8BC34A;
-    padding: 12px 20px;
-    font-weight: bold;
-    margin-bottom: 10px !important;
+    background-color: #e7f7e9;
+    border-left: 4px solid #46b450;
+    color: #2e7d32 !important;
+    padding: 15px 20px;
+    margin: 20px 0;
+    border-radius: 0 6px 6px 0;
+    font-weight: 500;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    animation: fadeInUp 0.4s ease-out;
 }
-p.sheet-saved {
-    color: white !important;
-}
+*/
+/* This style is now handled in frontend-forecast.php
 .forecast_header {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-bottom: 10px;
-    background: #ffd428;
-    padding: 10px 20px;
-    border-radius: 7px;
+    margin-bottom: 25px;
+    background-color: #f9fbff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
 }
+*/
 .axichem-form {
     margin-bottom: 50px;
 }
@@ -32,7 +39,7 @@ div#myTable_filter {
 }
 
 td.product__name.sorting_1 {
-    padding-left: 10px !important;
+    padding-left: 15px !important;
 }
 
 .product_name:hover {
@@ -47,56 +54,58 @@ td.product__name.sorting_1 {
 .forecast-buttons {
     display: flex;
     margin-top: 20px;
-    grid-gap: 20px;
+    gap: 20px;
+    flex-wrap: wrap;
 }
 
-input.forecast-buttons__submit {
-    background: #239127 !important;
+button.forecast-buttons__submit {
+    background: #0073aa !important;
     color: white !important;
 }
-input#saveButton:hover {
-    background: #ffd400;
-    opacity: 0.7;
-    color: black;
-}
+
 hr.forecast-divider {
-    margin: 20px !important;
-    background-color: #f0f0f0 !important;
+    margin: 30px 0 !important;
+    border: 0;
+    border-top: 1px solid #eaedf0 !important;
+    background-color: transparent !important;
 }
 
-.forecast-buttons>* {
-    width: 50%;
+.forecast-buttons > * {
     transition: all 250ms !important;
-    border-radius: 5px !important;
+    border-radius: 6px !important;
 }
 
 button#export-button {
-    background: #3a3a3a;
+    background: #46b450;
     color: white;
     transition: all 250ms;
 }
 
 button#export-button:hover {
-    opacity: 0.7;
+    background-color: #389e41;
+    box-shadow: 0 4px 8px rgba(0, 115, 50, 0.2);
 }
 
 .customers-message {
-    background: #8bc34a7d;
-    padding: 30px;
-    border-radius: 5px;
+    background-color: #e7f7e9;
+    padding: 20px 30px;
+    border-radius: 8px;
     margin-bottom: 30px;
     position: relative;
-    display: none;
+    border-left: 4px solid #46b450;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 
 .customers-message h4 {
     margin-bottom: 10px;
+    color: #2e7d32;
 }
 
 .customers-message p {
     margin: 0;
     font-size: 15px;
     line-height: 1.6rem;
+    color: #333;
 }
 
 .closeMessage {
@@ -114,102 +123,185 @@ button#export-button:hover {
     height: 25px;
     width: 25px;
     padding: 4px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .closeMessage svg:hover {
     opacity: 0.6;
+    transform: rotate(90deg);
 }
 
-div#loadingMessage {
-    font-size: 16px;
-    font-weight: 500;
-    background: aliceblue;
-    text-align: center;
-    line-height: 2rem;
-    border-top-left-radius: 5px;
-    border-top-right-radius: 5px;
-}
+/* Loading message is now styled in frontend-forecast.php */
 
 /* Help Tab */
 .help__contact-details div {
     display: flex;
     align-items: center;
     gap: 10px;
-    margin-bottom: 10px;
+    margin-bottom: 15px;
     font-size: 16px;
 }
 
 /* My Account Dashboard page */
 .account-dashboard h5 {
-    margin-bottom: 6px;
+    margin-bottom: 10px;
+    color: #333;
+    font-weight: 600;
 }
-
 
 .account-dashboard p {
     font-weight: 400;
     margin: 0;
+    line-height: 1.6;
 }
 
 .account-dashboard a {
     font-weight: 600;
+    color: #0073aa;
+    text-decoration: none;
+    transition: color 0.2s;
+}
+
+.account-dashboard a:hover {
+    color: #005a87;
+    text-decoration: underline;
 }
 
 .dashboard-divider {
     width: 100px;
     height: 3px;
-    background: #ffd428;
-    margin: 20px 0;
+    background: #0073aa;
+    margin: 25px 0;
+    border-radius: 3px;
 }
 
 /* Instructions page */
 .forecast__instructions h5 {
-    font-weight: 500;
+    font-weight: 600;
     font-size: 16px;
-    margin-bottom: 10px;
+    margin-bottom: 12px;
+    color: #333;
 }
 
 .forecast__instructions h5:before {
     content: '• ';
-    color: #65895d;
+    color: #0073aa;
 }
 
 .forecast__instructions li,
 .forecast__instructions p {
     font-weight: 400;
     line-height: 1.6rem;
+    color: #444;
 }
 
 .forecast__instructions ol {
     margin-left: 35px;
-    margin-top: 0px;
+    margin-top: 5px;
+    margin-bottom: 20px;
 }
 
 /* Forecast Help */
 .forecast__help p {
     font-weight: 400;
     line-height: 1.6rem;
+    color: #444;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Enhanced Table Styling */
+.forecast-table {
+    border-collapse: collapse;
+    width: 100%;
+    margin: 20px 0;
+}
+
+.forecast-table th {
+    background-color: #f0f0f0;
+    font-weight: bold;
+    border: 1px solid #ddd;
+    padding: 10px;
+    text-align: left;
+}
+
+.forecast-table th.month-header {
+    text-align: center;
+}
+
+.forecast-table td {
+    border: 1px solid #ddd;
+    padding: 8px;
+}
+
+.forecast-table td.quantity-cell {
+    text-align: center;
+}
+
+.forecast-table td.total-cell {
+    text-align: center;
+    font-weight: bold;
+    background-color: #f9f9f9;
+}
+
+.forecast-table tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+.forecast-table tr:hover {
+    background-color: #f0f8ff;
 }
 
 /* Responsive */
 @media (max-width:768px) {
-	.woocommerce-MyAccount-content-wrapper {
-		padding: 0 10px !important
-	}
+    .woocommerce-MyAccount-content-wrapper {
+        padding: 0 15px !important
+    }
+    
     .forecast_header {
         flex-flow: column;
-        gap: 10px;
+        gap: 15px;
+        align-items: flex-start;
     }
-
+    
     .product__id {
         display: none;
     }
-
+    
     .forecast-buttons {
-        flex-flow: column;
-        gap: 7px;
+        flex-direction: column;
+        gap: 10px;
     }
-
-    .forecast-buttons>* {
+    
+    .forecast-buttons > * {
         width: 100%
+    }
+    
+    .product-search-form {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    #browse-all-button {
+        width: 100%;
+    }
+    
+    .forecast-table {
+        display: block;
+        overflow-x: auto;
     }
 }

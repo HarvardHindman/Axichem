@@ -515,7 +515,24 @@ jQuery(document).ready(function ($) {
           // Direct approach for setting quantities
           for (let m = 1; m <= 12; m++) {
             const month = m < 10 ? '0' + m : '' + m;
-            const quantity = productData[productId][month] || 0;
+            
+            // Try multiple formats for the month key
+            let quantity = 0;
+            const monthData = productData[productId];
+            
+            if (monthData[month] !== undefined) {
+              quantity = monthData[month];
+              console.log(`Found quantity for ${month} (zero-padded): ${quantity}`);
+            } else if (monthData[parseInt(month)] !== undefined) {
+              quantity = monthData[parseInt(month)];
+              console.log(`Found quantity for ${month} (integer): ${quantity}`);
+            } else if (monthData['' + parseInt(month)] !== undefined) {
+              quantity = monthData['' + parseInt(month)];
+              console.log(`Found quantity for ${month} (string integer): ${quantity}`);
+            } else {
+              console.log(`No quantity found for month ${month} - setting default 0`);
+            }
+            
             const inputSelector = `input[name="product_quantity[${productId}][${month}]"]`;
             const $input = jQuery(inputSelector);
             
@@ -1160,16 +1177,36 @@ function updateProductQuantities(productData) {
 function setAllProductQuantities(productData) {
   console.log('Setting all product quantities with direct approach');
   
+  // Log entire product data structure for debugging
+  console.log('Full product data structure:', JSON.stringify(productData, null, 2));
+  
   // For each product ID in the data
   Object.keys(productData).forEach(function(productId) {
     const monthData = productData[productId];
-    console.log('Setting quantities for product ID:', productId, monthData);
+    console.log('Setting quantities for product ID:', productId, 'Month data:', monthData);
+    
+    // Log all month keys for this product
+    console.log('Month keys for product ' + productId + ':', Object.keys(monthData));
     
     // For each month 1-12
     for (let m = 1; m <= 12; m++) {
       const month = m < 10 ? '0' + m : '' + m;
-      // Get quantity for this month (default to 0 if not found)
-      const quantity = monthData[month] || 0;
+      
+      // Try multiple formats for the month key
+      let quantity = 0;
+      if (monthData[month] !== undefined) {
+        quantity = monthData[month];
+        console.log(`Found quantity for ${month} (zero-padded): ${quantity}`);
+      } else if (monthData[parseInt(month)] !== undefined) {
+        quantity = monthData[parseInt(month)];
+        console.log(`Found quantity for ${month} (integer): ${quantity}`);
+      } else if (monthData['' + parseInt(month)] !== undefined) {
+        quantity = monthData['' + parseInt(month)];
+        console.log(`Found quantity for ${month} (string integer): ${quantity}`);
+      } else {
+        console.log(`No quantity found for month ${month} - setting default 0`);
+      }
+      
       // Find the input field
       const inputSelector = `input[name="product_quantity[${productId}][${month}]"]`;
       const $input = jQuery(inputSelector);

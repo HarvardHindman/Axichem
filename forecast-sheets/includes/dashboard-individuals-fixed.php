@@ -14,7 +14,7 @@ function display_user_ids_page()
     global $wpdb;
 
     // Default to current year if no year is selected
-    $selectedYear = isset($_GET['year']) ? sanitize_text_field($_GET['year']) : '2024';
+    $selectedYear = isset($_GET['year']) ? sanitize_text_field($_GET['year']) : date('Y');
 
     // Query to retrieve unique user IDs for the selected year
     $table_name = $wpdb->prefix . "forecast_sheets"; // Construct table name
@@ -31,18 +31,29 @@ function display_user_ids_page()
         <h1 class="wp-heading-inline">Forecast Sheets per Customer</h1>
         <hr class="wp-header-end" />
         
-        <div style="margin: 20px 0; padding: 15px; background: #f8f8f8; border: 1px solid #e0e0e0; border-radius: 4px;">
-            <label for="year"><strong>Select Year:</strong></label>
-            <select id="year" name="selectYear">
-                <?php
-                // Generate options for years
-                $years = array('2024', '2025', '2026');
-                foreach ($years as $year) {
-                    $selected = ($year === $selectedYear) ? 'selected' : '';
-                    echo "<option value='$year' $selected>$year</option>";
-                }
-                ?>
-            </select>
+        <div class="filter-controls" style="margin: 20px 0; padding: 15px; background: #f8f8f8; border: 1px solid #e0e0e0; border-radius: 4px;">
+            <form method="get" action="">
+                <input type="hidden" name="page" value="user-ids">
+                
+                <div style="display: flex; flex-wrap: wrap; gap: 15px; align-items: center;">
+                    <div>
+                        <label for="year"><strong>Select Year:</strong></label>
+                        <select id="year" name="year">
+                            <?php
+                            // Generate options for years
+                            for ($y = 2024; $y <= 2026; $y++) {
+                                $selected = ($y == $selectedYear) ? 'selected' : '';
+                                echo "<option value='$y' $selected>$y</option>";
+                            }
+                            ?>
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <button type="submit" class="button button-primary">Apply Filter</button>
+                    </div>
+                </div>
+            </form>
         </div>
 
         <h2>Forecasts for year <?php echo $selectedYear; ?></h2>
@@ -54,7 +65,6 @@ function display_user_ids_page()
         </div>
         <?php
         if (!empty($results)) {
-            echo '<ul>';
             echo '<table class="wp-list-table widefat fixed striped table-view-list pages" style="border-collapse: collapse; width: 100%;">';
             echo '<thead>';
             echo '<tr>';
@@ -82,28 +92,6 @@ function display_user_ids_page()
 
         echo '</div>';
         ?>
-
-        <script>
-            jQuery(document).ready(function($) {
-                // Function to update the URL with year parameter
-                function updateURL() {
-                    var selectedYear = $('#year').val();
-                    window.location.href = '?page=user-ids&year=' + selectedYear;
-                }
-
-                // Add change event listener to the year dropdown
-                $('#year').on('change', function() {
-                    updateURL();
-                });
-
-                // After page load, reselect the year based on the URL parameter
-                var urlParams = new URLSearchParams(window.location.search);
-                var selectedYearFromURL = urlParams.get('year');
-                if (selectedYearFromURL) {
-                    $('#year').val(selectedYearFromURL);
-                }
-            });
-        </script>
         <?php
         ob_end_flush();
     }
@@ -131,30 +119,29 @@ function display_user_ids_page()
 
         if (isset($_GET['user_id'])) {
             $user_id = sanitize_text_field($_GET['user_id']);
-            $selectedYear = isset($_GET['year']) ? sanitize_text_field($_GET['year']) : '2024';
-
-            // Query to retrieve user name for the selected user_id
-            $table_name = $wpdb->prefix . "forecast_sheets"; // Construct table name
-            $user_query = $wpdb->prepare("
-                SELECT user_name
-                FROM $table_name
-                WHERE user_id = %s
-                AND in_year = %s
-                LIMIT 1
-            ", $user_id, $selectedYear);
-
-            $user_name = $wpdb->get_var($user_query);
+            
+            // Default filter settings
+            $current_year = date('Y');
+            $current_month = date('m');
+            $current_quarter = 'Q' . ceil(intval($current_month) / 3);
+            
+            // Get filter values from GET parameters
+            $filter_type = isset($_GET['filter_type']) ? sanitize_text_field($_GET['filter_type']) : 'year';
+            $selected_year = isset($_GET['year']) ? sanitize_text_field($_GET['year']) : $current_year;
+            $selected_month = isset($_GET['month']) ? sanitize_text_field($_GET['month']) : $current_month;
+            $selected_quarter = isset($_GET['quarter']) ? sanitize_text_field($_GET['quarter']) : $current_quarter;
 
             // Get business name
             $business = get_user_meta($user_id, 'user_registration_input_box_1696381917', true);
             $user = get_user_by('ID', $user_id);
 
             echo '<div class="wrap">';
-            echo '<h2>Forecast for customer: ' . esc_html($business) . '</h2>';
+            echo '<h1 class="wp-heading-inline">Forecast for customer: ' . esc_html($business) . '</h1>';
+            echo '<hr class="wp-header-end" />';
             
             // Filter controls
             ?>
-            <div style="margin: 20px 0; padding: 15px; background: #f8f8f8; border: 1px solid #e0e0e0; border-radius: 4px;">
+            <div class="filter-controls" style="margin: 20px 0; padding: 15px; background: #f8f8f8; border: 1px solid #e0e0e0; border-radius: 4px;">
                 <form method="get" action="">
                     <input type="hidden" name="page" value="user-specific-data">
                     <input type="hidden" name="user_id" value="<?php echo esc_attr($user_id); ?>">
@@ -163,13 +150,13 @@ function display_user_ids_page()
                         <div>
                             <label for="filter_type"><strong>View by:</strong></label>
                             <select id="filter_type" name="filter_type">
-                                <option value="year" <?php selected(isset($_GET['filter_type']) ? $_GET['filter_type'] : 'year', 'year'); ?>>Year</option>
-                                <option value="quarter" <?php selected(isset($_GET['filter_type']) ? $_GET['filter_type'] : '', 'quarter'); ?>>Quarter</option>
-                                <option value="month" <?php selected(isset($_GET['filter_type']) ? $_GET['filter_type'] : '', 'month'); ?>>Month</option>
+                                <option value="year" <?php selected($filter_type, 'year'); ?>>Year</option>
+                                <option value="quarter" <?php selected($filter_type, 'quarter'); ?>>Quarter</option>
+                                <option value="month" <?php selected($filter_type, 'month'); ?>>Month</option>
                             </select>
                         </div>
                         
-                        <div id="month-filter" style="<?php echo (!isset($_GET['filter_type']) || $_GET['filter_type'] !== 'month') ? 'display:none;' : ''; ?>">
+                        <div id="month-filter" style="<?php echo $filter_type !== 'month' ? 'display:none;' : ''; ?>">
                             <label for="month"><strong>Month:</strong></label>
                             <select id="month" name="month">
                                 <?php
@@ -188,9 +175,6 @@ function display_user_ids_page()
                                     '12' => 'December'
                                 );
 
-                                $current_month = date('m');
-                                $selected_month = isset($_GET['month']) ? $_GET['month'] : $current_month;
-
                                 foreach ($months as $month_code => $month_name) {
                                     $selected = ($month_code === $selected_month) ? 'selected' : '';
                                     echo "<option value='$month_code' $selected>$month_name</option>";
@@ -199,7 +183,7 @@ function display_user_ids_page()
                             </select>
                         </div>
                         
-                        <div id="quarter-filter" style="<?php echo (!isset($_GET['filter_type']) || $_GET['filter_type'] !== 'quarter') ? 'display:none;' : ''; ?>">
+                        <div id="quarter-filter" style="<?php echo $filter_type !== 'quarter' ? 'display:none;' : ''; ?>">
                             <label for="quarter"><strong>Quarter:</strong></label>
                             <select id="quarter" name="quarter">
                                 <?php
@@ -210,10 +194,6 @@ function display_user_ids_page()
                                     'Q4' => 'Q4 (Oct - Dec)',
                                 ];
 
-                                $current_month = date('m');
-                                $current_quarter = 'Q' . ceil(intval($current_month) / 3);
-                                $selected_quarter = isset($_GET['quarter']) ? $_GET['quarter'] : $current_quarter;
-
                                 foreach ($quarter_options as $quarter_code => $quarter_name) {
                                     $selected = ($quarter_code === $selected_quarter) ? 'selected' : '';
                                     echo "<option value='$quarter_code' $selected>$quarter_name</option>";
@@ -222,15 +202,13 @@ function display_user_ids_page()
                             </select>
                         </div>
                         
-                        <div id="year-filter">
+                        <div>
                             <label for="year"><strong>Year:</strong></label>
                             <select id="year" name="year">
                                 <?php
-                                $current_year = date('Y');
-                                $years = array('2024', '2025', '2026');
-                                foreach ($years as $year) {
-                                    $selected = ($year === $selectedYear) ? 'selected' : '';
-                                    echo "<option value='$year' $selected>$year</option>";
+                                for ($y = 2024; $y <= 2026; $y++) {
+                                    $selected = ($y == $selected_year) ? 'selected' : '';
+                                    echo "<option value='$y' $selected>$y</option>";
                                 }
                                 ?>
                             </select>
@@ -252,27 +230,18 @@ function display_user_ids_page()
                         if (filterType === 'month') {
                             $('#month-filter').show();
                             $('#quarter-filter').hide();
-                            $('#year-filter').show();
                         } else if (filterType === 'quarter') {
                             $('#month-filter').hide();
                             $('#quarter-filter').show();
-                            $('#year-filter').show();
                         } else {
                             $('#month-filter').hide();
                             $('#quarter-filter').hide();
-                            $('#year-filter').show();
                         }
                     });
                 });
             </script>
             <?php
 
-            // Determine filter settings
-            $filter_type = isset($_GET['filter_type']) ? sanitize_text_field($_GET['filter_type']) : 'year';
-            $selectedYear = isset($_GET['year']) ? sanitize_text_field($_GET['year']) : date('Y');
-            $selectedMonth = isset($_GET['month']) ? sanitize_text_field($_GET['month']) : date('m');
-            $selectedQuarter = isset($_GET['quarter']) ? sanitize_text_field($_GET['quarter']) : 'Q' . ceil(intval(date('m')) / 3);
-            
             // Define quarters and their corresponding months
             $quarters = [
                 'Q1' => ['01', '02', '03'],
@@ -280,6 +249,8 @@ function display_user_ids_page()
                 'Q3' => ['07', '08', '09'],
                 'Q4' => ['10', '11', '12'],
             ];
+            
+            // Use the global get_month_name function from dashboard-totals-unified.php
             
             // Build the query based on filter type
             $table_name = $wpdb->prefix . "forecast_sheets";
@@ -301,31 +272,37 @@ function display_user_ids_page()
                     AND in_month = %s
                     AND quantity > 0
                     ORDER BY product_name ASC
-                ", $user_id, $selectedYear, $selectedMonth);
+                ", $user_id, $selected_year, $selected_month);
                 
                 $results = $wpdb->get_results($query);
-                
-                // Month name for display
-                $months = array(
-                    '01' => 'January',
-                    '02' => 'February',
-                    '03' => 'March',
-                    '04' => 'April',
-                    '05' => 'May',
-                    '06' => 'June',
-                    '07' => 'July',
-                    '08' => 'August',
-                    '09' => 'September',
-                    '10' => 'October',
-                    '11' => 'November',
-                    '12' => 'December'
-                );
-                $period_label = $months[$selectedMonth] . " " . $selectedYear;
+                $period_label = get_month_name($selected_month) . " " . $selected_year;
                 
                 // Display month view
                 if (!empty($results)) {
-                    echo '<h3>Forecast for: ' . esc_html($period_label) . '</h3>';
-                    echo '<table class="widefat" style="margin: 20px 0; border-collapse: collapse; width: 100%;">';
+                    echo '<h2>Forecast for: ' . esc_html($period_label) . '</h2>';
+                    
+                    // Export buttons
+                    echo '<div class="tablenav top">';
+                    echo '<div class="alignleft actions">';
+                    echo '<form method="post" action="" style="display:inline-block; margin-right: 10px;">';
+                    echo '<input type="hidden" name="export_month" value="' . esc_attr($selected_month) . '">';
+                    echo '<input type="hidden" name="export_year" value="' . esc_attr($selected_year) . '">';
+                    echo '<input type="hidden" name="export_user_id" value="' . esc_attr($user_id) . '">';
+                    echo '<input type="hidden" name="export_filter_type" value="month">';
+                    echo '<input type="submit" name="export_button" class="button" value="Email Forecast">';
+                    echo '</form>';
+                    
+                    echo '<form method="post" action="" style="display:inline-block;">';
+                    echo '<input type="hidden" name="export_month" value="' . esc_attr($selected_month) . '">';
+                    echo '<input type="hidden" name="export_year" value="' . esc_attr($selected_year) . '">';
+                    echo '<input type="hidden" name="export_user_id" value="' . esc_attr($user_id) . '">';
+                    echo '<input type="hidden" name="export_filter_type" value="month">';
+                    echo '<input type="submit" name="export_csv_button" class="button" value="Download Spreadsheet">';
+                    echo '</form>';
+                    echo '</div>';
+                    echo '</div>';
+                    
+                    echo '<table class="wp-list-table widefat fixed striped table-view-list pages" style="border-collapse: collapse; width: 100%;">';
                     echo '<thead>';
                     echo '<tr>';
                     echo '<th style="background-color: #f0f0f0; font-weight: bold; border: 1px solid #ddd; padding: 8px;">Product ID</th>';
@@ -345,21 +322,13 @@ function display_user_ids_page()
                     
                     echo '</tbody>';
                     echo '</table>';
-                    echo '<form method="post" action="">
-                        <input type="hidden" name="export_month" value="' . $selectedMonth . '">
-                        <input type="hidden" name="export_year" value="' . $selectedYear . '">
-                        <input type="hidden" name="export_user_id" value="' . $user_id . '">
-                        <input type="hidden" name="export_filter_type" value="month">
-                        <input type="submit" name="export_button" class="button button-primary" value="Email Forecast">
-                        <input type="submit" name="export_csv_button" class="button button-primary" value="Download Spreadsheet">
-                    </form>';
                 } else {
                     echo "<p class='notice notice-error'>No forecasts found for this month.</p>";
                 }
             }
             elseif ($filter_type == 'quarter') {
                 // Quarter view query
-                $selected_months = isset($quarters[$selectedQuarter]) ? $quarters[$selectedQuarter] : [];
+                $selected_months = isset($quarters[$selected_quarter]) ? $quarters[$selected_quarter] : [];
                 
                 // Create a placeholder for the IN clause
                 $placeholders = implode(', ', array_fill(0, count($selected_months), '%s'));
@@ -378,10 +347,10 @@ function display_user_ids_page()
                     AND in_month IN ($placeholders)
                     AND quantity > 0
                     ORDER BY product_name ASC, in_month ASC
-                ", array_merge([$user_id, $selectedYear], $selected_months));
+                ", array_merge([$user_id, $selected_year], $selected_months));
                 
                 $results = $wpdb->get_results($query);
-                $period_label = $selectedQuarter . " " . $selectedYear;
+                $period_label = $selected_quarter . " " . $selected_year;
                 
                 // Process results for quarter view
                 if (!empty($results)) {
@@ -389,7 +358,8 @@ function display_user_ids_page()
                     $products = array();
                     foreach ($results as $row) {
                         $product_id = $row->product_id;
-                        $month = $row->in_month;
+                        // Ensure month is consistently formatted
+                        $month = sprintf('%02d', (int)$row->in_month);
                         
                         if (!isset($products[$product_id])) {
                             $products[$product_id] = array(
@@ -401,8 +371,30 @@ function display_user_ids_page()
                         $products[$product_id]['months'][$month] = $row->quantity;
                     }
                     
-                    echo '<h3>Forecast for: ' . esc_html($period_label) . '</h3>';
-                    echo '<table class="widefat" style="margin: 20px 0; border-collapse: collapse; width: 100%;">';
+                    echo '<h2>Forecast for: ' . esc_html($period_label) . '</h2>';
+                    
+                    // Export buttons
+                    echo '<div class="tablenav top">';
+                    echo '<div class="alignleft actions">';
+                    echo '<form method="post" action="" style="display:inline-block; margin-right: 10px;">';
+                    echo '<input type="hidden" name="export_quarter" value="' . esc_attr($selected_quarter) . '">';
+                    echo '<input type="hidden" name="export_year" value="' . esc_attr($selected_year) . '">';
+                    echo '<input type="hidden" name="export_user_id" value="' . esc_attr($user_id) . '">';
+                    echo '<input type="hidden" name="export_filter_type" value="quarter">';
+                    echo '<input type="submit" name="export_button" class="button" value="Email Forecast">';
+                    echo '</form>';
+                    
+                    echo '<form method="post" action="" style="display:inline-block;">';
+                    echo '<input type="hidden" name="export_quarter" value="' . esc_attr($selected_quarter) . '">';
+                    echo '<input type="hidden" name="export_year" value="' . esc_attr($selected_year) . '">';
+                    echo '<input type="hidden" name="export_user_id" value="' . esc_attr($user_id) . '">';
+                    echo '<input type="hidden" name="export_filter_type" value="quarter">';
+                    echo '<input type="submit" name="export_csv_button" class="button" value="Download Spreadsheet">';
+                    echo '</form>';
+                    echo '</div>';
+                    echo '</div>';
+                    
+                    echo '<table class="wp-list-table widefat fixed striped table-view-list pages" style="border-collapse: collapse; width: 100%;">';
                     echo '<thead>';
                     echo '<tr>';
                     echo '<th style="background-color: #f0f0f0; font-weight: bold; border: 1px solid #ddd; padding: 8px;">Product ID</th>';
@@ -416,7 +408,7 @@ function display_user_ids_page()
                         'Q4' => ['Oct', 'Nov', 'Dec']
                     ];
                     
-                    foreach ($month_headers[$selectedQuarter] as $month_header) {
+                    foreach ($month_headers[$selected_quarter] as $month_header) {
                         echo '<th style="background-color: #f0f0f0; font-weight: bold; border: 1px solid #ddd; padding: 8px; text-align: center;">' . $month_header . '</th>';
                     }
                     
@@ -432,7 +424,7 @@ function display_user_ids_page()
                         
                         $total = 0;
                         // Display data for each month in the quarter
-                        $quarter_months = $quarters[$selectedQuarter];
+                        $quarter_months = $quarters[$selected_quarter];
                         foreach ($quarter_months as $month) {
                             $quantity = isset($product['months'][$month]) ? $product['months'][$month] : 0;
                             $total += $quantity;
@@ -445,14 +437,6 @@ function display_user_ids_page()
                     
                     echo '</tbody>';
                     echo '</table>';
-                    echo '<form method="post" action="">
-                        <input type="hidden" name="export_quarter" value="' . $selectedQuarter . '">
-                        <input type="hidden" name="export_year" value="' . $selectedYear . '">
-                        <input type="hidden" name="export_user_id" value="' . $user_id . '">
-                        <input type="hidden" name="export_filter_type" value="quarter">
-                        <input type="submit" name="export_button" class="button button-primary" value="Email Forecast">
-                        <input type="submit" name="export_csv_button" class="button button-primary" value="Download Spreadsheet">
-                    </form>';
                 } else {
                     echo "<p class='notice notice-error'>No forecasts found for this quarter.</p>";
                 }
@@ -472,17 +456,18 @@ function display_user_ids_page()
                     AND in_year = %s
                     AND quantity > 0
                     ORDER BY product_name ASC, in_month ASC
-                ", $user_id, $selectedYear);
+                ", $user_id, $selected_year);
 
                 $results = $wpdb->get_results($query);
-                $period_label = "Year " . $selectedYear;
+                $period_label = "Year " . $selected_year;
 
                 if (!empty($results)) {
                     // Organize data by product and month
                     $products = array();
                     foreach ($results as $row) {
                         $product_id = $row->product_id;
-                        $month = $row->in_month;
+                        // Ensure month is consistently formatted
+                        $month = sprintf('%02d', (int)$row->in_month);
                         
                         if (!isset($products[$product_id])) {
                             $products[$product_id] = array(
@@ -494,8 +479,28 @@ function display_user_ids_page()
                         $products[$product_id]['months'][$month] = $row->quantity;
                     }
                     
-                    echo '<h3>Forecast for: ' . esc_html($period_label) . '</h3>';
-                    echo '<table class="widefat" style="margin: 20px 0; border-collapse: collapse; width: 100%;">';
+                    echo '<h2>Forecast for: ' . esc_html($period_label) . '</h2>';
+                    
+                    // Export buttons
+                    echo '<div class="tablenav top">';
+                    echo '<div class="alignleft actions">';
+                    echo '<form method="post" action="" style="display:inline-block; margin-right: 10px;">';
+                    echo '<input type="hidden" name="export_year" value="' . esc_attr($selected_year) . '">';
+                    echo '<input type="hidden" name="export_user_id" value="' . esc_attr($user_id) . '">';
+                    echo '<input type="hidden" name="export_filter_type" value="year">';
+                    echo '<input type="submit" name="export_button" class="button" value="Email Forecast">';
+                    echo '</form>';
+                    
+                    echo '<form method="post" action="" style="display:inline-block;">';
+                    echo '<input type="hidden" name="export_year" value="' . esc_attr($selected_year) . '">';
+                    echo '<input type="hidden" name="export_user_id" value="' . esc_attr($user_id) . '">';
+                    echo '<input type="hidden" name="export_filter_type" value="year">';
+                    echo '<input type="submit" name="export_csv_button" class="button" value="Download Spreadsheet">';
+                    echo '</form>';
+                    echo '</div>';
+                    echo '</div>';
+                    
+                    echo '<table class="wp-list-table widefat fixed striped table-view-list pages" style="border-collapse: collapse; width: 100%;">';
                     echo '<thead>';
                     echo '<tr>';
                     echo '<th style="background-color: #f0f0f0; font-weight: bold; border: 1px solid #ddd; padding: 8px;">Product ID</th>';
@@ -536,13 +541,6 @@ function display_user_ids_page()
 
                     echo '</tbody>';
                     echo '</table>';
-                    echo '<form method="post" action="">
-                        <input type="hidden" name="export_year" value="' . $selectedYear . '">
-                        <input type="hidden" name="export_user_id" value="' . $user_id . '">
-                        <input type="hidden" name="export_filter_type" value="year">
-                        <input type="submit" name="export_button" class="button button-primary" value="Email Forecast">
-                        <input type="submit" name="export_csv_button" class="button button-primary" value="Download Spreadsheet">
-                    </form>';
                 } else {
                     echo "<p class='notice notice-error'>The customer hasn't completed any forecasts for this year yet.</p>";
                 }
@@ -573,7 +571,7 @@ function display_user_ids_page()
         global $wpdb;
         $user_id = intval($_POST['export_user_id']);
         $filter_type = isset($_POST['export_filter_type']) ? sanitize_text_field($_POST['export_filter_type']) : 'year';
-        $selectedYear = isset($_POST['export_year']) ? sanitize_text_field($_POST['export_year']) : date('Y');
+        $selected_year = isset($_POST['export_year']) ? sanitize_text_field($_POST['export_year']) : date('Y');
         
         // Get Username and business name
         $table_name = $wpdb->prefix . 'forecast_sheets';
@@ -617,7 +615,7 @@ function display_user_ids_page()
         ];
         
         if ($filter_type == 'month') {
-            $selectedMonth = sanitize_text_field($_POST['export_month']);
+            $selected_month = sanitize_text_field($_POST['export_month']);
             
             // Query for specific month
             $query = $wpdb->prepare("
@@ -633,13 +631,13 @@ function display_user_ids_page()
                 AND in_month = %s
                 AND quantity > 0
                 ORDER BY product_name ASC
-            ", $user_id, $selectedYear, $selectedMonth);
+            ", $user_id, $selected_year, $selected_month);
             
             $results = $wpdb->get_results($query);
             
             // Prepare the email message
-            $subject = 'Forecast for ' . $business . ' - ' . $months[$selectedMonth] . ' ' . $selectedYear;
-            $message .= '<h2 style="margin-bottom:20px">Forecast for: ' . $business . ' - ' . $months[$selectedMonth] . ' ' . $selectedYear . '</h2>';
+            $subject = 'Forecast for ' . $business . ' - ' . $months[$selected_month] . ' ' . $selected_year;
+            $message .= '<h2 style="margin-bottom:20px">Forecast for: ' . $business . ' - ' . $months[$selected_month] . ' ' . $selected_year . '</h2>';
             $message .= '<table border="1">
                     <tr>
                         <th>Product ID</th>
@@ -658,8 +656,8 @@ function display_user_ids_page()
             $message .= '</table>';
             
         } elseif ($filter_type == 'quarter') {
-            $selectedQuarter = sanitize_text_field($_POST['export_quarter']);
-            $selected_months = isset($quarters[$selectedQuarter]) ? $quarters[$selectedQuarter] : [];
+            $selected_quarter = sanitize_text_field($_POST['export_quarter']);
+            $selected_months = isset($quarters[$selected_quarter]) ? $quarters[$selected_quarter] : [];
             
             // Create placeholders for the IN clause
             $placeholders = implode(', ', array_fill(0, count($selected_months), '%s'));
@@ -678,7 +676,7 @@ function display_user_ids_page()
                 AND in_month IN ($placeholders)
                 AND quantity > 0
                 ORDER BY product_name ASC, in_month ASC
-            ", array_merge([$user_id, $selectedYear], $selected_months));
+            ", array_merge([$user_id, $selected_year], $selected_months));
             
             $results = $wpdb->get_results($query);
             
@@ -686,7 +684,8 @@ function display_user_ids_page()
             $products = array();
             foreach ($results as $row) {
                 $product_id = $row->product_id;
-                $month = $row->in_month;
+                // Ensure month is consistently formatted
+                $month = sprintf('%02d', (int)$row->in_month);
                 
                 if (!isset($products[$product_id])) {
                     $products[$product_id] = array(
@@ -699,15 +698,15 @@ function display_user_ids_page()
             }
             
             // Prepare the email message
-            $subject = 'Forecast for ' . $business . ' - ' . $selectedQuarter . ' ' . $selectedYear;
-            $message .= '<h2 style="margin-bottom:20px">Forecast for: ' . $business . ' - ' . $selectedQuarter . ' ' . $selectedYear . '</h2>';
+            $subject = 'Forecast for ' . $business . ' - ' . $selected_quarter . ' ' . $selected_year;
+            $message .= '<h2 style="margin-bottom:20px">Forecast for: ' . $business . ' - ' . $selected_quarter . ' ' . $selected_year . '</h2>';
             $message .= '<table border="1">
                     <tr>
                         <th>Product ID</th>
                         <th>Product Name</th>';
             
             // Add month headers for this quarter
-            foreach ($month_headers[$selectedQuarter] as $month_header) {
+            foreach ($month_headers[$selected_quarter] as $month_header) {
                 $message .= '<th>' . $month_header . '</th>';
             }
             
@@ -746,7 +745,7 @@ function display_user_ids_page()
                 AND in_year = %s
                 AND quantity > 0
                 ORDER BY product_name ASC, in_month ASC
-            ", $user_id, $selectedYear);
+            ", $user_id, $selected_year);
             
             $results = $wpdb->get_results($query);
             
@@ -754,7 +753,8 @@ function display_user_ids_page()
             $products = array();
             foreach ($results as $row) {
                 $product_id = $row->product_id;
-                $month = $row->in_month;
+                // Ensure month is consistently formatted
+                $month = sprintf('%02d', (int)$row->in_month);
                 
                 if (!isset($products[$product_id])) {
                     $products[$product_id] = array(
@@ -767,8 +767,8 @@ function display_user_ids_page()
             }
             
             // Prepare the email message
-            $subject = 'Forecast for ' . $business . ' - Year: ' . $selectedYear;
-            $message .= '<h2 style="margin-bottom:20px">Forecast for: ' . $business . ' - Year: ' . $selectedYear . '</h2>';
+            $subject = 'Forecast for ' . $business . ' - Year: ' . $selected_year;
+            $message .= '<h2 style="margin-bottom:20px">Forecast for: ' . $business . ' - Year: ' . $selected_year . '</h2>';
             $message .= '<table border="1">
                     <tr>
                         <th>Product ID</th>
@@ -820,7 +820,7 @@ function display_user_ids_page()
         $current_query_params = $_GET; // Get the current query parameters
 
         // Add the 'message' parameter
-        $current_query_params['message'] = 'success1';
+        $current_query_params['message'] = 'success';
 
         // Generate the new URL with current parameters and 'message' parameter
         $redirect_url = add_query_arg($current_query_params, admin_url('admin.php?page=user-specific-data'));
@@ -833,7 +833,7 @@ function display_user_ids_page()
         global $wpdb;
         $user_id = intval($_POST['export_user_id']);
         $filter_type = isset($_POST['export_filter_type']) ? sanitize_text_field($_POST['export_filter_type']) : 'year';
-        $selectedYear = isset($_POST['export_year']) ? sanitize_text_field($_POST['export_year']) : date('Y');
+        $selected_year = isset($_POST['export_year']) ? sanitize_text_field($_POST['export_year']) : date('Y');
         
         // Get Username and business name
         $table_name = $wpdb->prefix . 'forecast_sheets';
@@ -873,7 +873,7 @@ function display_user_ids_page()
         ];
         
         if ($filter_type == 'month') {
-            $selectedMonth = sanitize_text_field($_POST['export_month']);
+            $selected_month = sanitize_text_field($_POST['export_month']);
             
             // Query for specific month
             $query = $wpdb->prepare("
@@ -889,12 +889,12 @@ function display_user_ids_page()
                 AND in_month = %s
                 AND quantity > 0
                 ORDER BY product_name ASC
-            ", $user_id, $selectedYear, $selectedMonth);
+            ", $user_id, $selected_year, $selected_month);
             
             $results = $wpdb->get_results($query);
             
             // Define the CSV file path and name
-            $csv_file = 'Forecast_' . $business . '-' . $months[$selectedMonth] . '-' . $selectedYear . '.csv';
+            $csv_file = 'Forecast_' . $business . '-' . $months[$selected_month] . '-' . $selected_year . '.csv';
             
             // Create a file pointer
             $fp = fopen($csv_file, 'w');
@@ -908,8 +908,8 @@ function display_user_ids_page()
             }
             
         } elseif ($filter_type == 'quarter') {
-            $selectedQuarter = sanitize_text_field($_POST['export_quarter']);
-            $selected_months = isset($quarters[$selectedQuarter]) ? $quarters[$selectedQuarter] : [];
+            $selected_quarter = sanitize_text_field($_POST['export_quarter']);
+            $selected_months = isset($quarters[$selected_quarter]) ? $quarters[$selected_quarter] : [];
             
             // Create placeholders for the IN clause
             $placeholders = implode(', ', array_fill(0, count($selected_months), '%s'));
@@ -928,7 +928,7 @@ function display_user_ids_page()
                 AND in_month IN ($placeholders)
                 AND quantity > 0
                 ORDER BY product_name ASC, in_month ASC
-            ", array_merge([$user_id, $selectedYear], $selected_months));
+            ", array_merge([$user_id, $selected_year], $selected_months));
             
             $results = $wpdb->get_results($query);
             
@@ -936,7 +936,8 @@ function display_user_ids_page()
             $products = array();
             foreach ($results as $row) {
                 $product_id = $row->product_id;
-                $month = $row->in_month;
+                // Ensure month is consistently formatted
+                $month = sprintf('%02d', (int)$row->in_month);
                 
                 if (!isset($products[$product_id])) {
                     $products[$product_id] = array(
@@ -949,14 +950,14 @@ function display_user_ids_page()
             }
             
             // Define the CSV file path and name
-            $csv_file = 'Forecast_' . $business . '-' . $selectedQuarter . '-' . $selectedYear . '.csv';
+            $csv_file = 'Forecast_' . $business . '-' . $selected_quarter . '-' . $selected_year . '.csv';
             
             // Create a file pointer
             $fp = fopen($csv_file, 'w');
             
             // Prepare CSV headers
             $headers = array('Product ID', 'Product Name');
-            foreach ($month_headers[$selectedQuarter] as $month_header) {
+            foreach ($month_headers[$selected_quarter] as $month_header) {
                 $headers[] = $month_header;
             }
             $headers[] = 'Total';
@@ -994,7 +995,7 @@ function display_user_ids_page()
                 AND in_year = %s
                 AND quantity > 0
                 ORDER BY product_name ASC, in_month ASC
-            ", $user_id, $selectedYear);
+            ", $user_id, $selected_year);
             
             $results = $wpdb->get_results($query);
             
@@ -1002,7 +1003,8 @@ function display_user_ids_page()
             $products = array();
             foreach ($results as $row) {
                 $product_id = $row->product_id;
-                $month = $row->in_month;
+                // Ensure month is consistently formatted
+                $month = sprintf('%02d', (int)$row->in_month);
                 
                 if (!isset($products[$product_id])) {
                     $products[$product_id] = array(
@@ -1015,7 +1017,7 @@ function display_user_ids_page()
             }
             
             // Define the CSV file path and name
-            $csv_file = 'Forecast_' . $business . '-' . $selectedYear . '.csv';
+            $csv_file = 'Forecast_' . $business . '-' . $selected_year . '.csv';
             
             // Create a file pointer
             $fp = fopen($csv_file, 'w');
@@ -1052,3 +1054,11 @@ function display_user_ids_page()
         unlink($csv_file);
         exit;
     }
+
+    // Display success message
+    function individual_forecast_success_notice() {
+        if (isset($_GET['message']) && $_GET['message'] === 'success' && isset($_GET['page']) && $_GET['page'] === 'user-specific-data') {
+            echo '<div class="updated"><p>Forecast data sent successfully!</p></div>';
+        }
+    }
+    add_action('admin_notices', 'individual_forecast_success_notice');

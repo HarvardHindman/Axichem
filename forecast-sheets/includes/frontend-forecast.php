@@ -23,7 +23,7 @@ function reorder_account_menu($items)
         'forecast-sheet'     => __('Forecast Sheets', 'woocommerce'),
         'price-list'         => __('Price List', 'woocommerce'),
         'forecast-instructions' => __('Instructions', 'woocommerce'),
-        'forecast-help'         => __('Forecast Help', 'woocommerce'),
+        'forecast-help'      => __('Forecast Help', 'woocommerce'),
         'edit-account'       => __('Edit Account', 'woocommerce'),
         'edit-address'       => __('Addresses', 'woocommerce'),
         'customer-logout'    => __('Logout', 'woocommerce'),
@@ -414,10 +414,11 @@ function custom_account_tab_content()
     // Products will be added by the user via the product search
 
 ?>
-    <div class="forecast_header">
-        <h3>Forecast Sheet</h3>
-        <div>
-            <select id="year" name="selectedYear">
+    <div class="forecast_header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; background-color: #f9fbff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
+        <h3 style="margin: 0; font-size: 24px; color: #333; font-weight: 600;">Forecast Sheet</h3>
+        <div style="display: flex; align-items: center;">
+            <label for="year" style="margin-right: 10px; font-weight: 500; color: #555;">Select Year:</label>
+            <select id="year" name="selectedYear" style="padding: 8px 12px; border-radius: 6px; border: 1px solid #ddd; background-color: white; min-width: 100px; font-size: 15px;">
                 <?php
                 $currentYear = date('Y');
                 $startYear = 2024; // Start from 2024
@@ -432,69 +433,170 @@ function custom_account_tab_content()
         </div>
     </div>
 
-    <div id="loadingMessage" style="display: none;">
-        Fetching data...
+    <div id="loadingMessage" style="display: none; text-align: center; padding: 20px; background-color: #f9fbff; border-radius: 8px; margin-bottom: 20px;">
+        <div style="display: inline-block; width: 20px; height: 20px; border: 3px solid rgba(0,115,170,0.3); border-radius: 50%; border-top-color: #0073aa; animation: spin 1s ease-in-out infinite; margin-right: 10px; vertical-align: middle;"></div>
+        <span style="vertical-align: middle; font-weight: 500; color: #555;">Fetching data...</span>
     </div>
     
     <!-- Product Search Section -->
-    <div class="product-search-container" style="margin-bottom: 20px;">
-        <h4>Add Products to Your Forecast</h4>
-        <p style="margin-bottom: 15px; color: #555;">Start typing to see product suggestions or click "Browse All Products" to view the complete list.</p>
-        <div class="product-search-form" style="display: flex; flex-wrap: wrap; gap: 10px; align-items: center;">
-            <div style="position: relative; flex-grow: 1;">
-                <label for="product-search" style="display: block; margin-bottom: 5px; font-weight: bold;">Search Products</label>
+    <div class="product-search-container">
+        <h4 style="margin-top: 0; margin-bottom: 15px; font-size: 18px; color: #333;">Add Products to Your Forecast</h4>
+        <p style="margin-bottom: 15px; color: #555; font-size: 14px;">Start typing to see product suggestions or click "Browse All Products" to view the complete list.</p>
+        <div class="product-search-form" style="display: flex; flex-wrap: wrap; gap: 15px; align-items: flex-end;">
+            <div style="position: relative; flex-grow: 1; max-width: 600px;">
+                <label for="product-search" style="display: block; margin-bottom: 8px; font-weight: 600; color: #444; font-size: 14px;">Search Products</label>
                 <div style="display: flex; position: relative;">
-                    <input type="text" id="product-search" placeholder="Start typing to search products..." style="width: 100%; padding: 8px; font-size: 14px;">
-                    <button type="button" id="search-button" style="padding: 8px 15px; margin-left: 5px;">Search</button>
+                    <input type="text" id="product-search" placeholder="Start typing to search products..." style="width: 100%; padding: 10px 12px; font-size: 14px; border-radius: 6px 0 0 6px; border: 1px solid #ddd; border-right: none;">
+                    <button type="button" id="search-button" style="padding: 10px 15px; border-radius: 0 6px 6px 0; background-color: #f5f7f9; border: 1px solid #ddd; color: #333; font-weight: 600;">Search</button>
                 </div>
                 <!-- Separate container for suggestions dropdown with fixed positioning -->
                 <div id="product-suggestions-container" style="position: relative; width: 100%;">
-                    <div id="product-suggestions" style="position: absolute; width: 100%; background: white; border: 1px solid #ddd; z-index: 9999; box-shadow: 0 4px 8px rgba(0,0,0,0.1); display: none; max-height: 300px; overflow-y: auto;"></div>
+                    <div id="product-suggestions" style="position: absolute; width: 100%; background: white; border: 1px solid #ddd; z-index: 9999; box-shadow: 0 4px 8px rgba(0,0,0,0.1); display: none; max-height: 300px; overflow-y: auto; border-radius: 0 0 6px 6px;"></div>
                 </div>
             </div>
-            <div style="margin-top: 25px;">
-                <button type="button" id="browse-all-button" style="padding: 8px 15px; background-color: #f7f7f7; border: 1px solid #ccc; border-radius: 3px;">Browse All Products</button>
+            <div>
+                <button type="button" id="browse-all-button" style="padding: 10px 15px; background-color: #f5f7f9; border: 1px solid #ddd; border-radius: 6px; font-weight: 600; color: #333;">Browse All Products</button>
             </div>
         </div>
-        <div id="search-results" style="margin-top: 10px; display: none;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
-                <h5 style="margin: 0;">Search Results</h5>
-                <button id="close-search-results" type="button" style="background: none; border: none; font-size: 16px; cursor: pointer; color: #666;">&times;</button>
+        <div id="search-results" style="margin-top: 15px; display: none; background-color: white; border-radius: 6px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); overflow: hidden;">
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px 15px; background-color: #f5f7f9; border-bottom: 1px solid #eaedf0;">
+                <h5 style="margin: 0; font-size: 16px; color: #333;">Search Results</h5>
+                <button id="close-search-results" type="button" style="background: none; border: none; font-size: 20px; cursor: pointer; color: #666; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: background-color 0.2s;">&times;</button>
             </div>
-            <div id="results-container" style="max-height: 300px; overflow-y: auto; border: 1px solid #ddd; padding: 10px;"></div>
+            <div id="results-container" style="max-height: 300px; overflow-y: auto; padding: 15px;"></div>
         </div>
     </div>    <!-- Custom CSS for table width and responsiveness -->
     <style>
+        /* Notification styling */
+        .sheet-saved {
+            background-color: #e7f7e9;
+            border-left: 4px solid #46b450;
+            color: #2e7d32;
+            padding: 15px 20px;
+            margin: 20px 0;
+            border-radius: 0 6px 6px 0;
+            font-weight: 500;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            animation: fadeInUp 0.4s ease-out;
+        }
+        
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        /* Modern styling for the forecast table */
         .forecast_body {
             max-width: 100%;
             overflow-x: auto;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
         }
+        
         #myTable {
             min-width: 100%;
             table-layout: auto;
             margin-bottom: 20px;
+            border-collapse: separate;
+            border-spacing: 0;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
         }
+        
+        #myTable thead {
+            background-color: #f5f7f9;
+        }
+        
+        #myTable thead th {
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            color: #333;
+            border-bottom: 2px solid #eaedf0;
+            position: sticky;
+            top: 0;
+            background-color: #f5f7f9;
+            z-index: 10;
+            text-transform: uppercase;
+            font-size: 12px;
+        }
+        
+        #myTable tbody tr {
+            transition: background-color 0.2s ease;
+        }
+        
+        #myTable tbody tr:nth-child(even) {
+            background-color: #fafbfc;
+        }
+        
+        #myTable tbody tr:hover {
+            background-color: #f0f7ff;
+        }
+        
         #myTable .product__name {
             min-width: 220px;
             max-width: 300px;
+            font-weight: 500;
         }
+        
         #myTable .product__id {
             width: 80px;
+            color: #666;
         }
+        
         #myTable .product__qty {
             width: 60px;
             min-width: 60px;
         }
+        
         #myTable input.data-quantity {
             width: 100%;
             min-width: 45px;
             text-align: center;
-            padding: 5px 2px;
+            padding: 8px 4px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            transition: border-color 0.2s, box-shadow 0.2s;
         }
+        
+        #myTable input.data-quantity:focus {
+            border-color: #4a90e2;
+            box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.2);
+            outline: none;
+        }
+        
+        #myTable .product__total {
+            background-color: #f2f9ff;
+            font-weight: bold;
+            color: #0073aa;
+        }
+        
         /* Make sure all month columns have equal width */
         #myTable th, #myTable td {
             white-space: nowrap;
-            padding: 8px 5px;
+            padding: 10px 8px;
+            border-bottom: 1px solid #eaedf0;
+        }
+        
+        /* Button styling */
+        #myTable .remove-product {
+            background: none;
+            border: none;
+            color: #ff5555;
+            cursor: pointer;
+            transition: transform 0.2s, color 0.2s;
+            opacity: 0.7;
+        }
+        
+        #myTable .remove-product:hover {
+            color: #ff0000;
+            transform: scale(1.2);
+            opacity: 1;
         }
         /* Improve responsive behavior */
         @media screen and (max-width: 1200px) {
@@ -511,6 +613,13 @@ function custom_account_tab_content()
             width: 100%;
             overflow-x: auto;
             padding-bottom: 15px;
+            border-radius: 8px;
+            background-color: #fff;
+        }
+        
+        .dataTables_scrollHead {
+            background-color: #f5f7f9;
+            border-radius: 8px 8px 0 0;
         }
         
         /* Better styling for number inputs */
@@ -528,23 +637,28 @@ function custom_account_tab_content()
         .dataTables_scrollBody {
             overflow-x: visible !important;
             overflow-y: auto !important;
+            border-radius: 0 0 8px 8px;
+            border: 1px solid #eaedf0;
+            border-top: none;
         }
         
         /* Empty state message styling */
         #no-products-message td {
-            padding: 30px;
+            padding: 40px;
             text-align: center;
-            background-color: #f9f9f9;
+            background-color: #f9fbff;
             font-size: 15px;
             color: #555;
+            border-radius: 8px;
         }
         
         /* Search container styling */
         .product-search-container {
-            background-color: #f9f9f9;
-            border-radius: 5px;
-            padding: 15px;
-            margin-bottom: 25px;
+            background-color: #f9fbff;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
         }
         
         /* Product suggestions styling */
@@ -592,23 +706,77 @@ function custom_account_tab_content()
             100% { transform: rotate(360deg); }
         }
         
-        /* Add button styling */
+        /* Button styles */
+        button, 
+        input[type="button"], 
+        input[type="submit"],
         .add-product-button {
+            padding: 10px 16px;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            transition: all 0.2s ease;
+            cursor: pointer;
+            border: none;
             background-color: #0073aa;
             color: white;
-            border: none;
-            border-radius: 3px;
-            cursor: pointer;
-            transition: background-color 0.2s;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
         
+        button:hover, 
+        input[type="button"]:hover, 
+        input[type="submit"]:hover,
         .add-product-button:hover:not([disabled]) {
             background-color: #005d87;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+            transform: translateY(-1px);
+        }
+        
+        button:focus, 
+        input[type="button"]:focus, 
+        input[type="submit"]:focus,
+        .add-product-button:focus {
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(0, 115, 170, 0.3);
         }
         
         .add-product-button[disabled] {
             background-color: #ccc;
             cursor: default;
+            box-shadow: none;
+            transform: none;
+        }
+        
+        /* Button variations */
+        #browse-all-button,
+        #search-button {
+            background-color: #f5f7f9;
+            color: #333;
+            border: 1px solid #ddd;
+        }
+        
+        #browse-all-button:hover,
+        #search-button:hover {
+            background-color: #e9ecef;
+            color: #0073aa;
+        }
+        
+        #export-button {
+            background-color: #46b450;
+            color: white;
+        }
+        
+        #export-button:hover {
+            background-color: #389e41;
+            box-shadow: 0 4px 8px rgba(0, 115, 50, 0.2);
+        }
+        
+        .forecast-buttons__submit {
+            background-color: #0073aa;
+            color: white;
+            font-weight: 600;
         }
     </style>
 
@@ -639,10 +807,15 @@ function custom_account_tab_content()
                     <!-- Products will be added here dynamically when selected by the user -->
                     <tr id="no-products-message">
                         <td colspan="16" style="text-align:center; padding: 20px;">
-                            <div style="padding: 30px 15px;">
-                              <div style="font-size: 18px; margin-bottom: 10px; color: #666;">No products added yet</div>
-                              <div style="font-size: 15px; color: #888; margin-bottom: 15px;">Use the search above to find and add products to your forecast</div>
-                              <button type="button" id="browse-products-button" style="padding: 8px 15px; background-color: #0073aa; color: white; border: none; border-radius: 3px; cursor: pointer;">Browse Products</button>
+                            <div style="padding: 40px 20px; background-color: #f9fbff; border-radius: 8px; box-shadow: inset 0 0 0 1px #eaedf0;">
+                              <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#0073aa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom: 15px; opacity: 0.7;">
+                                <circle cx="9" cy="21" r="1"></circle>
+                                <circle cx="20" cy="21" r="1"></circle>
+                                <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+                              </svg>
+                              <div style="font-size: 20px; margin-bottom: 10px; color: #444; font-weight: 500;">No products added yet</div>
+                              <div style="font-size: 15px; color: #666; margin-bottom: 20px; max-width: 400px; margin-left: auto; margin-right: auto;">Use the search above to find and add products to your forecast</div>
+                              <button type="button" id="browse-products-button" style="padding: 10px 20px; background-color: #0073aa; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; box-shadow: 0 2px 4px rgba(0,0,0,0.1); transition: all 0.2s;">Browse Products</button>
                             </div>
                         </td>
                     </tr>

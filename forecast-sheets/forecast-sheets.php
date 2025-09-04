@@ -11,9 +11,8 @@ function include_export_data_file()
     include_once(plugin_dir_path(__FILE__) . 'includes/frontend-help.php');
     include_once(plugin_dir_path(__FILE__) . 'includes/frontend-instructions.php');
     include_once(plugin_dir_path(__FILE__) . 'includes/frontend-dashboard.php');
-    include_once(plugin_dir_path(__FILE__) . 'includes/dashboard-individuals.php');
-    include_once(plugin_dir_path(__FILE__) . 'includes/dashboard-totals.php');
-    include_once(plugin_dir_path(__FILE__) . 'includes/dashboard-totals-quarters.php');
+    include_once(plugin_dir_path(__FILE__) . 'includes/dashboard-individuals-fixed.php');
+    include_once(plugin_dir_path(__FILE__) . 'includes/dashboard-totals-unified.php');
     include_once(plugin_dir_path(__FILE__) . 'includes/dashboard-message.php');
     include_once(plugin_dir_path(__FILE__) . 'includes/dashboard-shopmanager.php');
 }
@@ -24,12 +23,13 @@ add_action('plugins_loaded', 'include_export_data_file');
 function enqueue_custom_plugin_styles()
 {
     wp_enqueue_script('jquery');
-    wp_enqueue_style('axichem-forecast-css', plugin_dir_url(__FILE__) . '/includes/css/lionandlamb-axichem.css');
+    wp_enqueue_style('axichem-forecast-css', plugin_dir_url(__FILE__) . '/includes/css/lionandlamb-axichem.css', array(), '1.1.0');
     wp_enqueue_style('dataTable-css', plugin_dir_url(__FILE__) . '/includes/css/datatables.min.css');
     wp_enqueue_style('dataTableResponsive-css', plugin_dir_url(__FILE__) . '/includes/css/responsive.dataTables.min.css');
     wp_enqueue_script('dataTable-js', plugin_dir_url(__FILE__) . '/includes/js/datatables.min.js');
     wp_enqueue_script('dataTableResponsive-js', plugin_dir_url(__FILE__) . '/includes/js/dataTables.responsive.min.js');
     wp_enqueue_script('axichem-forecast-js', plugin_dir_url(__FILE__) . '/includes/js/lionandlamb-axichem-fixed.js', array('jquery'), '1.0.4', true);
+    wp_enqueue_script('unified-totals-js', plugin_dir_url(__FILE__) . '/includes/js/unified-totals.js', array('jquery', 'dataTable-js'), '1.0.0', true);
     wp_localize_script('axichem-forecast-js', 'ajax_object', array(
         'ajaxurl' => admin_url('admin-ajax.php'),
         'security' => wp_create_nonce('product_search_nonce')
@@ -194,11 +194,11 @@ function populate_all_product_quantities() {
             $product_names[$product_id] = $row->product_name;
         }
         
-        // Make sure month is properly zero-padded
-        $month = $row->in_month;
-        if (strlen($month) === 1) {
-            $month = '0' . $month;
-        }
+        // ALWAYS ensure month is properly zero-padded with sprintf
+        $month = sprintf('%02d', (int)$row->in_month);
+        
+        // Log individual month data
+        error_log("Product: $product_id, Month: {$row->in_month} formatted to: $month, Quantity: {$row->quantity}");
         
         // Store the quantity as an integer
         $product_quantities[$product_id][$month] = (int) $row->quantity;
@@ -215,7 +215,15 @@ function populate_all_product_quantities() {
         error_log('First product ID: ' . array_key_first($product_quantities));
         $first_product = reset($product_quantities);
         error_log('First product months: ' . implode(',', array_keys($first_product)));
+        
+        // Log the month data for first product
+        foreach ($first_product as $month => $qty) {
+            error_log("Month key: $month, Quantity: $qty");
+        }
     }
+    
+    // Log entire response for debugging
+    error_log('Full response: ' . json_encode($response));
     
     // Send the response in a structured format
     wp_send_json($response);
@@ -268,6 +276,9 @@ function save_forecast_data() {
         wp_die();
     }
     
+    // Log the product data received
+    error_log('Received product quantities for saving: ' . json_encode(array_keys($product_quantities)));
+    
     global $wpdb;
     $user_table_name = $wpdb->prefix . 'forecast_sheets';
     $total_table_name = $wpdb->prefix . 'forecast_sheets_totals';
@@ -317,12 +328,18 @@ function save_forecast_data() {
         foreach ($month_quantities as $month => $quantity) {
             $quantity = intval($quantity);
             
+            // Ensure month is consistently formatted - convert string month to int and then back to string with leading zero
+            $month_numeric = intval($month);
+            $month_formatted = sprintf('%02d', $month_numeric);
+            
+            error_log("Saving product: $product_id, Original month: $month, Formatted month: $month_formatted, Quantity: $quantity");
+            
             $existing_user_row = $wpdb->get_row(
                 $wpdb->prepare(
                     "SELECT * FROM $user_table_name WHERE user_id = %d AND product_id = %s AND in_month = %s AND in_year = %s",
                     $user_id,
                     $product_id,
-                    $month,
+                    $month_formatted,
                     $selectedYear
                 )
             );
@@ -345,7 +362,7 @@ function save_forecast_data() {
                         'product_name' => $product_name,
                         'quantity' => $quantity,
                         'in_year' => $selectedYear,
-                        'in_month' => $month
+                        'in_month' => $month_formatted
                     )
                 );
             }
@@ -355,7 +372,7 @@ function save_forecast_data() {
                 $wpdb->prepare(
                     "SELECT * FROM $total_table_name WHERE product_id = %s AND in_month = %s AND in_year = %s",
                     $product_id,
-                    $month,
+                    $month_formatted,
                     $selectedYear
                 )
             );
@@ -365,7 +382,7 @@ function save_forecast_data() {
                 $wpdb->prepare(
                     "SELECT SUM(quantity) FROM $user_table_name WHERE product_id = %s AND in_month = %s AND in_year = %s",
                     $product_id,
-                    $month,
+                    $month_formatted,
                     $selectedYear
                 )
             );
@@ -378,12 +395,12 @@ function save_forecast_data() {
                         'product_name' => $product_name,
                         'total_quantity' => $total_quantity,
                         'in_year' => $selectedYear,
-                        'in_month' => $month
+                        'in_month' => $month_formatted
                     ),
                     array(
                         'product_id' => $product_id,
                         'in_year' => $selectedYear,
-                        'in_month' => $month
+                        'in_month' => $month_formatted
                     )
                 );
             } else {
@@ -395,7 +412,7 @@ function save_forecast_data() {
                         'product_name' => $product_name,
                         'total_quantity' => $total_quantity,
                         'in_year' => $selectedYear,
-                        'in_month' => $month
+                        'in_month' => $month_formatted
                     )
                 );
             }
@@ -422,7 +439,9 @@ function save_forecast_data() {
                     'months' => array()
                 );
             }
-            $products_data[$row->product_id]['months'][$row->in_month] = $row->quantity;
+            // Ensure month is properly formatted
+            $month_formatted = sprintf('%02d', $row->in_month);
+            $products_data[$row->product_id]['months'][$month_formatted] = $row->quantity;
         }
 
         // Create an email message with the saved data
