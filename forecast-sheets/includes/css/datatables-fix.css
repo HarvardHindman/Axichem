@@ -1,0 +1,117 @@
+/* CSS to fix DataTables header arrow duplication */
+table.dataTable thead .sorting:after,
+table.dataTable thead .sorting_asc:after,
+table.dataTable thead .sorting_desc:after,
+table.dataTable thead .sorting:before,
+table.dataTable thead .sorting_asc:before,
+table.dataTable thead .sorting_desc:before {
+    content: "" !important;
+    display: none !important;
+}
+
+/* Add back single arrows with more specific selectors */
+table.dataTable thead .sorting:after {
+    content: "\2195" !important;
+    display: inline-block !important;
+    opacity: 0.4;
+    margin-left: 5px;
+}
+
+table.dataTable thead .sorting_asc:after {
+    content: "\2191" !important;
+    display: inline-block !important;
+    opacity: 0.8;
+    margin-left: 5px;
+}
+
+table.dataTable thead .sorting_desc:after {
+    content: "\2193" !important;
+    display: inline-block !important;
+    opacity: 0.8;
+    margin-left: 5px;
+}
+
+/* Fix overall table styling */
+table.dataTable {
+    width: 100% !important;
+    margin-bottom: 1rem;
+    border-collapse: collapse;
+}
+
+table.dataTable thead th {
+    position: relative;
+    padding-right: 20px;
+}
+
+/* Style for fixed columns */
+.DTFC_LeftBodyLiner, .DTFC_RightBodyLiner {
+    overflow-y: hidden !important;
+    background-color: white;
+}
+
+.DTFC_LeftHeadWrapper table.dataTable, 
+.DTFC_RightHeadWrapper table.dataTable {
+    margin-bottom: 0 !important;
+    background-color: white;
+}
+
+/* Fix for the "Show X entries" dropdown */
+.dataTables_length select {
+    appearance: auto !important; /* Use browser's default appearance */
+    -webkit-appearance: auto !important;
+    -moz-appearance: auto !important;
+    background-image: none !important; /* Remove any custom background images */
+    background-repeat: no-repeat !important;
+    background-position: right center !important;
+    padding-right: 20px !important;
+}
+
+/* Remove all psuedo-elements on selects */
+.dataTables_length select:before,
+.dataTables_length select:after,
+.dataTables_length:before,
+.dataTables_length:after {
+    display: none !important;
+    content: "" !important;
+}
+
+/* Fix specifically for the "Show X entries" dropdown wrapper */
+.dataTables_wrapper .dataTables_length {
+    position: relative;
+}
+
+/* Remove any background images or content on the wrapper that might be adding arrows */
+.dataTables_wrapper .dataTables_length:after,
+.dataTables_wrapper .dataTables_length:before {
+    content: none !important;
+    display: none !important;
+    background-image: none !important;
+}
+
+/* Additional fix for theme-specific styling */
+.dataTables_length select {
+    background: #fff !important; /* Ensure white background */
+    border: 1px solid #ddd !important; /* Standard border */
+    box-shadow: none !important; /* Remove any shadow */
+}
+
+/* Fix for double arrows in various browsers */
+select::-ms-expand {
+    display: none !important; /* For IE/Edge */
+}
+
+/* Remove any SVG background images that might be added by themes */
+.dataTables_length select,
+.dataTables_length .select2-selection {
+    background-image: none !important;
+}
+
+/* Additional responsive styles */
+.dataTables_wrapper .dataTables_paginate .paginate_button {
+    padding: 0.25em 0.5em;
+}
+
+.dataTables_wrapper .dataTables_length,
+.dataTables_wrapper .dataTables_filter {
+    margin-bottom: 10px;
+}

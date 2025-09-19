@@ -1,0 +1,266 @@
+/* Axichem Orders Styles */
+
+/* Frontend Orders Table */
+.axichem-orders-container {
+    margin: 20px 0;
+}
+
+.axichem-orders-container table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 20px 0;
+}
+
+.axichem-orders-container th,
+.axichem-orders-container td {
+    padding: 10px;
+    border: 1px solid #ddd;
+}
+
+.axichem-orders-container th {
+    background-color: #f5f5f5;
+    font-weight: bold;
+    text-align: left;
+}
+
+/* Admin Orders Page */
+.user-selection-container {
+    margin: 20px 0;
+    padding: 15px;
+    background: #f9f9f9;
+    border: 1px solid #e5e5e5;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border-radius: 4px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+.user-selection-container label {
+    margin-right: 10px;
+    font-weight: 500;
+}
+
+.user-selection-container select {
+    flex-grow: 1;
+    max-width: 400px;
+    padding: 8px 30px 8px 10px;
+    border-radius: 4px;
+    border: 1px solid #ddd;
+    font-size: 14px;
+    background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20width%3D%2220%22%20height%3D%2220%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cpath%20d%3D%22M5%206l5%205%205-5%202%201-7%207-7-7%202-1z%22%20fill%3D%22%23555%22%2F%3E%3C%2Fsvg%3E");
+    background-position: right 5px top 55%;
+    background-repeat: no-repeat;
+    background-size: 16px 16px;
+    appearance: none;
+}
+
+.user-selection-container select:focus {
+    border-color: #0073aa;
+    box-shadow: 0 0 0 1px #0073aa;
+    outline: none;
+}
+
+/* Button Styling */
+.add-order-container {
+    margin: 20px 0;
+}
+
+#show-add-order-form {
+    padding: 8px 15px;
+    font-weight: 500;
+    transition: all 0.2s ease-in-out;
+}
+
+#show-add-order-form:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+#cancel-add-order {
+    background-color: #f5f5f5;
+    color: #666;
+    border: 1px solid #ddd;
+    margin-left: 10px;
+}
+
+#cancel-add-order:hover {
+    background-color: #eee;
+}
+
+/* DataTables Customization */
+.dataTables_wrapper .dataTables_filter input {
+    padding: 5px;
+    border: 1px solid #ddd;
+    margin-left: 5px;
+}
+
+.dataTables_wrapper .dataTables_length select {
+    padding: 5px 25px 5px 5px; /* Increased right padding for the arrow */
+    border: 1px solid #ddd;
+    height: auto;
+    line-height: normal;
+    -webkit-appearance: menulist; /* Ensures native select appearance */
+    -moz-appearance: menulist;
+    appearance: menulist;
+    background-position: right center;
+    background-repeat: no-repeat;
+}
+
+/* Fix for length control layout */
+.dataTables_wrapper .dataTables_length {
+    margin-bottom: 15px;
+    white-space: nowrap;
+}
+
+/* Product Suggestions */
+#product-suggestions {
+    max-height: 200px;
+    overflow-y: auto;
+    box-shadow: 0 3px 8px rgba(0,0,0,0.1);
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 0 0 4px 4px;
+    z-index: 9999;
+    margin-top: -1px;
+    width: auto;
+    min-width: 200px;
+    max-width: 350px;
+    position: absolute;
+}
+
+.product-suggestion-item {
+    padding: 10px 12px;
+    border-bottom: 1px solid #eee;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    font-size: 14px;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+}
+
+.product-suggestion-item:hover {
+    background-color: #f0f7ff;
+    border-left: 3px solid #0073aa;
+    padding-left: 9px;
+}
+
+.product-suggestion-item:last-child {
+    border-bottom: none;
+}
+
+#product-suggestions-container {
+    position: relative;
+    width: auto;
+    display: inline-block;
+}
+
+/* Form Styling */
+#add-order-form {
+    background-color: #f9f9f9;
+    border: 1px solid #e5e5e5;
+    border-radius: 4px;
+    padding: 20px;
+    margin-bottom: 30px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
+
+#add-order-form .form-table th {
+    width: 150px;
+    padding: 15px 10px 15px 0;
+}
+
+#add-order-form h3 {
+    margin-top: 0;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #eee;
+    margin-bottom: 20px;
+}
+
+#add-order-form input[type="text"],
+#add-order-form input[type="number"] {
+    width: 100%;
+    max-width: 350px;
+    padding: 8px 12px;
+    border-radius: 4px;
+    border: 1px solid #ddd;
+    font-size: 14px;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+#add-order-form input[type="text"]:focus,
+#add-order-form input[type="number"]:focus {
+    border-color: #0073aa;
+    box-shadow: 0 0 0 1px #0073aa;
+    outline: none;
+}
+
+#add-order-form .description {
+    font-style: italic;
+    color: #666;
+    margin-top: 5px;
+    font-size: 13px;
+}
+
+#add-order-form .submit {
+    margin-top: 20px;
+    padding-top: 15px;
+    border-top: 1px solid #eee;
+}
+
+/* Responsive Adjustments */
+@media screen and (max-width: 782px) {
+    .user-selection-container {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .user-selection-container select {
+        width: 100%;
+        margin-bottom: 10px;
+    }
+}
+
+/* Additional DataTables styling */
+.dataTables_wrapper {
+    padding: 10px 0;
+    position: relative;
+}
+
+/* Ensure consistent spacing for all DataTables controls */
+.dataTables_wrapper .dataTables_length,
+.dataTables_wrapper .dataTables_filter,
+.dataTables_wrapper .dataTables_info,
+.dataTables_wrapper .dataTables_paginate {
+    margin-bottom: 15px;
+}
+
+/* Fix for pagination controls */
+.dataTables_wrapper .dataTables_paginate .paginate_button {
+    padding: 0.4em 0.8em;
+    margin-left: 2px;
+}
+
+/* Fix any overlap on smaller screens */
+@media screen and (max-width: 640px) {
+    .dataTables_wrapper .dataTables_length,
+    .dataTables_wrapper .dataTables_filter,
+    .dataTables_wrapper .dataTables_info,
+    .dataTables_wrapper .dataTables_paginate {
+        text-align: left;
+        float: none;
+        width: 100%;
+        margin-bottom: 10px;
+        clear: both;
+    }
+    
+    .dataTables_wrapper .dataTables_length select {
+        width: auto;
+        display: inline-block;
+    }
+    
+    .dataTables_wrapper .dataTables_paginate {
+        margin-top: 15px;
+    }
+}

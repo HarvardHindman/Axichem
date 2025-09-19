@@ -1,0 +1,212 @@
+/* Additional CSS for forecast-sheets alignment fixes */
+
+/* Fix alignment of search bar with browse button */
+.product-search-form {
+    display: flex !important;
+    align-items: flex-end !important; /* Align items at the bottom */
+    gap: 15px !important;
+    margin-bottom: 15px !important;
+}
+
+.search-input-container {
+    margin-bottom: 0 !important;
+    display: flex !important;
+    flex-direction: column !important;
+}
+
+.search-input-container label {
+    margin-bottom: 8px !important;
+    display: block !important;
+}
+
+#product-search-wrapper {
+    margin-bottom: 0 !important;
+    display: flex !important;
+}
+
+/* Make the browse button align properly with the search input */
+#browse-all-button {
+    height: 42px !important;
+    padding: 0 15px !important;
+    margin-top: 24px !important; /* Align with the search input - match label height */
+    white-space: nowrap !important;
+    border: 1px solid #ddd !important;
+    border-radius: 4px !important;
+    background-color: #f5f7f9 !important;
+    color: #333 !important;
+    font-weight: 600 !important;
+    cursor: pointer !important;
+    align-self: flex-end !important; /* Align to the bottom of the flex container */
+}
+
+/* Fix search input and button heights to be consistent */
+#product-search {
+    height: 42px !important;
+    box-sizing: border-box !important;
+    flex: 1 !important;
+    min-width: 200px !important;
+    margin: 0 !important; /* Remove any margin */
+    padding: 10px 12px !important; /* Standardize padding */
+    border-radius: 6px 0 0 6px !important;
+}
+
+#search-button {
+    height: 42px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    white-space: nowrap !important;
+    margin: 0 !important; /* Remove any margin */
+    padding: 0 15px !important; /* Standardize padding */
+    border-radius: 0 6px 6px 0 !important;
+    box-sizing: border-box !important; /* Include padding in height calculation */
+}
+
+/* Improved product search container */
+.product-search-container {
+    max-width: 100% !important;
+}
+
+/* Make the search box and button display nicely */
+#product-search-wrapper {
+    display: flex !important;
+    flex: 1 !important;
+    max-width: 600px !important;
+    margin: 0 !important;
+    height: 42px !important; /* Match height with browse button */
+}
+
+/* Fix any inline styles that might be overriding our CSS */
+.product-search-form div[style] {
+    margin-bottom: 0 !important;
+}
+
+.product-search-form div[style] div[style] {
+    display: flex !important;
+    margin: 0 !important;
+}
+
+/* Improved product suggestions container */
+#product-suggestions {
+    width: 100% !important;
+    max-width: 600px !important;
+    max-height: 350px !important;
+    overflow-y: auto !important;
+    z-index: 9999 !important;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15) !important;
+    border: 1px solid #ddd !important;
+    border-top: none !important;
+    background-color: white !important;
+}
+
+/* Highlight selected product in suggestions */
+.product-item {
+    padding: 10px !important;
+    border-bottom: 1px solid #eee !important;
+    cursor: pointer !important;
+    transition: background-color 0.2s ease !important;
+}
+
+.product-item:hover {
+    background-color: #f5f5f5 !important;
+}
+
+.product-item.selected-suggestion {
+    background-color: #e0f7ff !important;
+    border-left: 3px solid #0073aa !important;
+    padding-left: 7px !important;
+}
+
+/* Ensure product display in suggestions is correct */
+.product-item div:first-child {
+    font-weight: bold !important;
+    white-space: normal !important;
+    word-break: break-word !important;
+}
+
+/* Make sure browse button doesn't wrap on smaller screens */
+@media (max-width: 768px) {
+    .product-search-form {
+        flex-direction: column !important;
+        align-items: stretch !important;
+    }
+    
+    #browse-all-button {
+        margin-top: 10px !important;
+        width: 100% !important;
+    }
+}
+
+/* Improved search results display */
+#search-results {
+    margin-top: 20px !important;
+    border: 1px solid #ddd !important;
+    border-radius: 4px !important;
+    background-color: white !important;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05) !important;
+}
+
+#search-results h3 {
+    margin: 0 !important;
+    padding: 12px 15px !important;
+    background-color: #f5f5f5 !important;
+    border-bottom: 1px solid #ddd !important;
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    font-size: 16px !important;
+}
+
+#close-search-results {
+    background: none !important;
+    border: none !important;
+    cursor: pointer !important;
+    color: #666 !important;
+    font-size: 20px !important;
+    padding: 0 !important;
+    margin: 0 !important;
+}
+
+#results-container ul {
+    margin: 0 !important;
+    padding: 0 !important;
+    list-style-type: none !important;
+    max-height: 500px !important;
+    overflow-y: auto !important;
+}
+
+#results-container li {
+    padding: 12px 15px !important;
+    border-bottom: 1px solid #eee !important;
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+}
+
+#results-container li:nth-child(even) {
+    background-color: #f9f9f9 !important;
+}
+
+#results-container li:last-child {
+    border-bottom: none !important;
+}
+
+.add-product-button {
+    background-color: #0073aa !important;
+    color: white !important;
+    border: none !important;
+    border-radius: 3px !important;
+    padding: 6px 12px !important;
+    cursor: pointer !important;
+    transition: background-color 0.2s ease !important;
+    font-size: 14px !important;
+}
+
+.add-product-button:hover {
+    background-color: #005a87 !important;
+}
+
+.add-product-button:disabled {
+    background-color: #ccc !important;
+    cursor: not-allowed !important;
+}

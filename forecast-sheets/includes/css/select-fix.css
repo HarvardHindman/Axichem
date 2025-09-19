@@ -1,0 +1,101 @@
+/**
+ * Extra fixes for DataTables select arrows in "Show X entries" dropdown
+ * This file contains additional CSS to fix the overlapping arrows in the length dropdown
+ */
+
+/* Complete reset of the dropdown styling */
+.dataTables_length select {
+    /* Reset all styling to default browser appearance */
+    appearance: auto !important;
+    -webkit-appearance: auto !important;
+    -moz-appearance: auto !important;
+    
+    /* Remove any background images that might add additional arrows */
+    background-image: none !important;
+    background-color: white !important;
+    
+    /* Standard border and spacing */
+    border: 1px solid #ccc !important;
+    padding: 4px 8px !important;
+    border-radius: 3px !important;
+    margin: 0 5px !important;
+    
+    /* Remove any box shadows */
+    box-shadow: none !important;
+    
+    /* Ensure text is visible */
+    color: #333 !important;
+    
+    /* Set a specific height to prevent multi-line issues */
+    height: auto !important;
+    min-height: 28px !important;
+    
+    /* Prevent text overflow */
+    text-overflow: ellipsis !important;
+    
+    /* Remove any transforms or animations */
+    transform: none !important;
+    transition: none !important;
+    
+    /* Ensure proper width */
+    width: auto !important;
+    min-width: 60px !important;
+    
+    /* Ensure z-index doesn't hide dropdown */
+    z-index: 1 !important;
+    
+    /* Make sure pointer cursor appears on hover */
+    cursor: pointer !important;
+    
+    /* Add !important to all properties to override any theme styling */
+    position: relative !important;
+    display: inline-block !important;
+    vertical-align: middle !important;
+    line-height: normal !important;
+    font-size: 14px !important;
+}
+
+/* Ensure the container doesn't add any extra styling */
+.dataTables_wrapper .dataTables_length {
+    background: none !important;
+    border: none !important;
+    padding: 0 !important;
+    margin: 0 0 10px 0 !important;
+    position: relative !important;
+}
+
+/* Aggressively remove any pseudo-elements */
+.dataTables_wrapper .dataTables_length:after,
+.dataTables_wrapper .dataTables_length:before,
+.dataTables_length select:after,
+.dataTables_length select:before {
+    display: none !important;
+    content: none !important;
+    background: none !important;
+    border: none !important;
+    width: 0 !important;
+    height: 0 !important;
+    position: static !important;
+    opacity: 0 !important;
+    visibility: hidden !important;
+}
+
+/* Hide MS-specific dropdown arrow */
+.dataTables_length select::-ms-expand {
+    display: none !important;
+}
+
+/* Target any theme-specific wrapper classes that might be adding custom styling */
+div.dataTables_length,
+span.dataTables_length,
+.dataTables_wrapper div.dataTables_length,
+.dataTables_wrapper span.dataTables_length {
+    background: none !important;
+    background-image: none !important;
+}
+
+/* Make sure select is not being hidden by container */
+.dataTables_length select {
+    opacity: 1 !important;
+    visibility: visible !important;
+}

@@ -4,6 +4,22 @@ Plugin Name: Forecast Sheets by Lion&Lamb
 Description: Adds a Forecast tab to the My Account page, where users can fill out the product form.
 */
 
+// Register activation and deactivation hooks
+register_activation_hook(__FILE__, 'forecast_sheets_plugin_activate');
+register_deactivation_hook(__FILE__, 'forecast_sheets_plugin_deactivate');
+
+// Activation function
+function forecast_sheets_plugin_activate() {
+    // Flush rewrite rules to make sure our endpoints work
+    flush_rewrite_rules();
+}
+
+// Deactivation function
+function forecast_sheets_plugin_deactivate() {
+    // Flush rewrite rules
+    flush_rewrite_rules();
+}
+
 // Include files 
 function include_export_data_file()
 {
@@ -15,6 +31,7 @@ function include_export_data_file()
     include_once(plugin_dir_path(__FILE__) . 'includes/dashboard-totals-unified.php');
     include_once(plugin_dir_path(__FILE__) . 'includes/dashboard-message.php');
     include_once(plugin_dir_path(__FILE__) . 'includes/dashboard-shopmanager.php');
+    include_once(plugin_dir_path(__FILE__) . 'includes/ajax-handlers.php');
 }
 add_action('plugins_loaded', 'include_export_data_file');
 
@@ -26,6 +43,9 @@ function enqueue_custom_plugin_styles()
     wp_enqueue_style('axichem-forecast-css', plugin_dir_url(__FILE__) . '/includes/css/lionandlamb-axichem.css', array(), '1.1.0');
     wp_enqueue_style('dataTable-css', plugin_dir_url(__FILE__) . '/includes/css/datatables.min.css');
     wp_enqueue_style('dataTableResponsive-css', plugin_dir_url(__FILE__) . '/includes/css/responsive.dataTables.min.css');
+    wp_enqueue_style('datatables-fix-css', plugin_dir_url(__FILE__) . '/includes/css/datatables-fix.css');
+    wp_enqueue_style('select-fix-css', plugin_dir_url(__FILE__) . '/includes/css/select-fix.css');
+    wp_enqueue_style('alignment-fix-css', plugin_dir_url(__FILE__) . '/includes/css/alignment-fix.css', array(), '1.0.4');
     wp_enqueue_script('dataTable-js', plugin_dir_url(__FILE__) . '/includes/js/datatables.min.js');
     wp_enqueue_script('dataTableResponsive-js', plugin_dir_url(__FILE__) . '/includes/js/dataTables.responsive.min.js');
     wp_enqueue_script('axichem-forecast-js', plugin_dir_url(__FILE__) . '/includes/js/lionandlamb-axichem-fixed.js', array('jquery'), '1.0.4', true);

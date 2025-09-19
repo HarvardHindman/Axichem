@@ -937,11 +937,20 @@ function updateRowTotals() {
 
 // Initialize DataTable
 function initializeDataTable() {
+  console.log('Initializing DataTable - checking if already initialized');
+  
   if (!jQuery.fn.DataTable) {
     console.error('DataTables library not loaded');
     return;
   }
+  
+  // Check if DataTable is already initialized
+  if (jQuery.fn.DataTable.isDataTable('#myTable')) {
+    console.log('DataTable already initialized - destroying existing instance');
+    jQuery('#myTable').DataTable().destroy();
+  }
 
+  console.log('Creating new DataTable instance');
   jQuery("#myTable").DataTable({
     paging: false,
     scrollCollapse: true,
@@ -973,6 +982,7 @@ function initializeDataTable() {
       updateRowTotals();
     }
   });
+  console.log('DataTable initialization complete');
 }
 
   // Function to fetch and populate product quantities for all products

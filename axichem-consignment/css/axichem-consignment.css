@@ -1,0 +1,137 @@
+/* Axichem Consignment CSS */
+
+.consignment-header {
+    margin-bottom: 25px;
+    background-color: #f9fbff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.consignment-header h3 {
+    margin: 0;
+    font-size: 24px;
+    color: #333;
+    font-weight: 600;
+}
+
+.consignment-body {
+    margin-bottom: 30px;
+}
+
+#consignment-stock-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 20px;
+}
+
+#consignment-stock-table th,
+#consignment-stock-table td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid #e5e5e5;
+}
+
+#consignment-stock-table th {
+    background-color: #f8f9fa;
+    font-weight: 600;
+    color: #333;
+}
+
+#consignment-stock-table tr:hover {
+    background-color: #f5f8ff;
+}
+
+/* Admin Styles */
+.consignment-admin-container {
+    display: flex;
+    margin-top: 20px;
+}
+
+.consignment-admin-container > div {
+    background: #fff;
+    padding: 20px;
+    border-radius: 5px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.consignment-admin-container .form-container {
+    flex: 1;
+    margin-right: 20px;
+}
+
+.consignment-admin-container .list-container {
+    flex: 2;
+}
+
+#product_search_results {
+    max-height: 200px;
+    overflow-y: auto;
+    border: 1px solid #ddd;
+    margin-top: 5px;
+    display: none;
+}
+
+.product-result {
+    padding: 8px;
+    cursor: pointer;
+    border-bottom: 1px solid #eee;
+}
+
+.product-result:hover {
+    background-color: #f0f7ff;
+}
+
+#selected_product_display {
+    margin-top: 10px;
+    padding: 8px;
+    background-color: #f9f9f9;
+    border-left: 3px solid #0073aa;
+    display: none;
+}
+
+/* DataTables customization */
+.dataTables_wrapper .dataTables_length, 
+.dataTables_wrapper .dataTables_filter {
+    margin-bottom: 15px;
+}
+
+.dataTables_wrapper .dataTables_info, 
+.dataTables_wrapper .dataTables_paginate {
+    margin-top: 15px;
+}
+
+.dataTables_wrapper .dataTables_paginate .paginate_button {
+    padding: 5px 10px;
+    margin-left: 2px;
+    border: 1px solid #ddd;
+    border-radius: 3px;
+    cursor: pointer;
+}
+
+.dataTables_wrapper .dataTables_paginate .paginate_button.current {
+    background: #0073aa;
+    color: white !important;
+    border-color: #0073aa;
+}
+
+/* Responsive tables */
+@media screen and (max-width: 767px) {
+    .consignment-admin-container {
+        flex-direction: column;
+    }
+    
+    .consignment-admin-container .form-container {
+        margin-right: 0;
+        margin-bottom: 20px;
+    }
+    
+    #consignment-stock-table {
+        display: block;
+        width: 100%;
+        overflow-x: auto;
+    }
+}

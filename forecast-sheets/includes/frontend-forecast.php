@@ -442,29 +442,26 @@ function custom_account_tab_content()
     <div class="product-search-container">
         <h4 style="margin-top: 0; margin-bottom: 15px; font-size: 18px; color: #333;">Add Products to Your Forecast</h4>
         <p style="margin-bottom: 15px; color: #555; font-size: 14px;">Start typing to see product suggestions or click "Browse All Products" to view the complete list.</p>
-        <div class="product-search-form" style="display: flex; flex-wrap: wrap; gap: 15px; align-items: flex-end;">
-            <div style="position: relative; flex-grow: 1; max-width: 600px;">
+        <div class="product-search-form">
+            <div class="search-input-container">
                 <label for="product-search" style="display: block; margin-bottom: 8px; font-weight: 600; color: #444; font-size: 14px;">Search Products</label>
-                <div style="display: flex; position: relative;">
-                    <input type="text" id="product-search" placeholder="Start typing to search products..." style="width: 100%; padding: 10px 12px; font-size: 14px; border-radius: 6px 0 0 6px; border: 1px solid #ddd; border-right: none;">
-                    <button type="button" id="search-button" style="padding: 10px 15px; border-radius: 0 6px 6px 0; background-color: #f5f7f9; border: 1px solid #ddd; color: #333; font-weight: 600;">Search</button>
+                <div id="product-search-wrapper">
+                    <input type="text" id="product-search" placeholder="Start typing to search products...">
+                    <button type="button" id="search-button">Search</button>
                 </div>
                 <!-- Separate container for suggestions dropdown with fixed positioning -->
-                <div id="product-suggestions-container" style="position: relative; width: 100%;">
-                    <div id="product-suggestions" style="position: absolute; width: 100%; background: white; border: 1px solid #ddd; z-index: 9999; box-shadow: 0 4px 8px rgba(0,0,0,0.1); display: none; max-height: 300px; overflow-y: auto; border-radius: 0 0 6px 6px;"></div>
+                <div id="product-suggestions-container">
+                    <div id="product-suggestions"></div>
                 </div>
             </div>
-            <div>
-                <button type="button" id="browse-all-button" style="padding: 10px 15px; background-color: #f5f7f9; border: 1px solid #ddd; border-radius: 6px; font-weight: 600; color: #333;">Browse All Products</button>
-            </div>
+            <button type="button" id="browse-all-button">Browse All Products</button>
         </div>
-        <div id="search-results" style="margin-top: 15px; display: none; background-color: white; border-radius: 6px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); overflow: hidden;">
-            <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px 15px; background-color: #f5f7f9; border-bottom: 1px solid #eaedf0;">
-                <h5 style="margin: 0; font-size: 16px; color: #333;">Search Results</h5>
-                <button id="close-search-results" type="button" style="background: none; border: none; font-size: 20px; cursor: pointer; color: #666; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: background-color 0.2s;">&times;</button>
-            </div>
-            <div id="results-container" style="max-height: 300px; overflow-y: auto; padding: 15px;"></div>
-        </div>
+                <div id="search-results" style="display: none;">
+            <h3>
+                Search Results
+                <button type="button" id="close-search-results">&times;</button>
+            </h3>
+            <div id="results-container"></div>
     </div>    <!-- Custom CSS for table width and responsiveness -->
     <style>
         /* Notification styling */
