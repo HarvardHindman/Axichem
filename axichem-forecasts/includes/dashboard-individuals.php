@@ -101,6 +101,10 @@ function display_user_ids_page()
                 var selectedYearFromURL = urlParams.get('year');
                 if (selectedYearFromURL) {
                     $('#year').val(selectedYearFromURL);
+                } else {
+                    // If no year in URL, default to current year
+                    var currentYear = new Date().getFullYear().toString();
+                    $('#year').val(currentYear);
                 }
             });
         </script>
@@ -168,7 +172,6 @@ function display_user_ids_page()
                                 <option value="month" <?php selected(isset($_GET['filter_type']) ? $_GET['filter_type'] : '', 'month'); ?>>Month</option>
                             </select>
                         </div>
-                        
                         <div id="month-filter" style="<?php echo (!isset($_GET['filter_type']) || $_GET['filter_type'] !== 'month') ? 'display:none;' : ''; ?>">
                             <label for="month"><strong>Month:</strong></label>
                             <select id="month" name="month">
@@ -187,10 +190,8 @@ function display_user_ids_page()
                                     '11' => 'November',
                                     '12' => 'December'
                                 );
-
                                 $current_month = date('m');
                                 $selected_month = isset($_GET['month']) ? $_GET['month'] : $current_month;
-
                                 foreach ($months as $month_code => $month_name) {
                                     $selected = ($month_code === $selected_month) ? 'selected' : '';
                                     echo "<option value='$month_code' $selected>$month_name</option>";
@@ -198,7 +199,6 @@ function display_user_ids_page()
                                 ?>
                             </select>
                         </div>
-                        
                         <div id="quarter-filter" style="<?php echo (!isset($_GET['filter_type']) || $_GET['filter_type'] !== 'quarter') ? 'display:none;' : ''; ?>">
                             <label for="quarter"><strong>Quarter:</strong></label>
                             <select id="quarter" name="quarter">
@@ -209,11 +209,9 @@ function display_user_ids_page()
                                     'Q3' => 'Q3 (Jul - Sep)',
                                     'Q4' => 'Q4 (Oct - Dec)',
                                 ];
-
                                 $current_month = date('m');
                                 $current_quarter = 'Q' . ceil(intval($current_month) / 3);
                                 $selected_quarter = isset($_GET['quarter']) ? $_GET['quarter'] : $current_quarter;
-
                                 foreach ($quarter_options as $quarter_code => $quarter_name) {
                                     $selected = ($quarter_code === $selected_quarter) ? 'selected' : '';
                                     echo "<option value='$quarter_code' $selected>$quarter_name</option>";
@@ -221,7 +219,6 @@ function display_user_ids_page()
                                 ?>
                             </select>
                         </div>
-                        
                         <div id="year-filter">
                             <label for="year"><strong>Year:</strong></label>
                             <select id="year" name="year">
@@ -235,7 +232,6 @@ function display_user_ids_page()
                                 ?>
                             </select>
                         </div>
-                        
                         <div>
                             <button type="submit" class="button button-primary">Apply Filters</button>
                         </div>
@@ -243,309 +239,95 @@ function display_user_ids_page()
                 </form>
             </div>
             
-            <script>
-                jQuery(document).ready(function($) {
-                    // Show/hide appropriate filter based on selection
-                    $('#filter_type').on('change', function() {
-                        var filterType = $(this).val();
-                        
-                        if (filterType === 'month') {
-                            $('#month-filter').show();
-                            $('#quarter-filter').hide();
-                            $('#year-filter').show();
-                        } else if (filterType === 'quarter') {
-                            $('#month-filter').hide();
-                            $('#quarter-filter').show();
-                            $('#year-filter').show();
-                        } else {
-                            $('#month-filter').hide();
-                            $('#quarter-filter').hide();
-                            $('#year-filter').show();
-                        }
-                    });
-                });
-            </script>
             <?php
 
-            // Determine filter settings
-            $filter_type = isset($_GET['filter_type']) ? sanitize_text_field($_GET['filter_type']) : 'year';
+            // Only keep the year view logic below
             $selectedYear = isset($_GET['year']) ? sanitize_text_field($_GET['year']) : date('Y');
-            $selectedMonth = isset($_GET['month']) ? sanitize_text_field($_GET['month']) : date('m');
-            $selectedQuarter = isset($_GET['quarter']) ? sanitize_text_field($_GET['quarter']) : 'Q' . ceil(intval(date('m')) / 3);
-            
-            // Define quarters and their corresponding months
-            $quarters = [
-                'Q1' => ['01', '02', '03'],
-                'Q2' => ['04', '05', '06'],
-                'Q3' => ['07', '08', '09'],
-                'Q4' => ['10', '11', '12'],
-            ];
-            
-            // Build the query based on filter type
             $table_name = $wpdb->prefix . "forecast_sheets";
-            $results = [];
-            $period_label = '';
-            
-            if ($filter_type == 'month') {
-                // Month view query
-                $query = $wpdb->prepare("
-                    SELECT
-                        user_id,
-                        user_name,
-                        product_id,
-                        product_name,
-                        quantity
-                    FROM $table_name
-                    WHERE user_id = %s
-                    AND in_year = %s
-                    AND in_month = %s
-                    AND quantity > 0
-                    ORDER BY product_name ASC
-                ", $user_id, $selectedYear, $selectedMonth);
-                
-                $results = $wpdb->get_results($query);
-                
-                // Month name for display
-                $months = array(
-                    '01' => 'January',
-                    '02' => 'February',
-                    '03' => 'March',
-                    '04' => 'April',
-                    '05' => 'May',
-                    '06' => 'June',
-                    '07' => 'July',
-                    '08' => 'August',
-                    '09' => 'September',
-                    '10' => 'October',
-                    '11' => 'November',
-                    '12' => 'December'
-                );
-                $period_label = $months[$selectedMonth] . " " . $selectedYear;
-                
-                // Display month view
-                if (!empty($results)) {
-                    echo '<h3>Forecast for: ' . esc_html($period_label) . '</h3>';
-                    echo '<table class="widefat" style="margin: 20px 0; border-collapse: collapse; width: 100%;">';
-                    echo '<thead>';
-                    echo '<tr>';
-                    echo '<th style="background-color: #f0f0f0; font-weight: bold; border: 1px solid #ddd; padding: 8px;">Product ID</th>';
-                    echo '<th style="background-color: #f0f0f0; font-weight: bold; border: 1px solid #ddd; padding: 8px;">Product Name</th>';
-                    echo '<th style="background-color: #f0f0f0; font-weight: bold; border: 1px solid #ddd; padding: 8px; text-align: center;">Quantity</th>';
-                    echo '</tr>';
-                    echo '</thead>';
-                    echo '<tbody>';
+            $query = $wpdb->prepare("
+                SELECT
+                    user_id,
+                    user_name,
+                    product_id,
+                    product_name,
+                    in_month,
+                    quantity
+                FROM $table_name
+                WHERE user_id = %s
+                AND in_year = %s
+                AND quantity > 0
+                ORDER BY product_name ASC, in_month ASC
+            ", $user_id, $selectedYear);
+            $results = $wpdb->get_results($query);
+            $period_label = "Year " . $selectedYear;
+            if (!empty($results)) {
+                // Organize data by product and month
+                $products = array();
+                foreach ($results as $row) {
+                    $product_id = $row->product_id;
+                    $month = $row->in_month;
                     
-                    foreach ($results as $row) {
-                        echo '<tr>';
-                        echo '<td style="border: 1px solid #ddd; padding: 8px;">' . esc_html($row->product_id) . '</td>';
-                        echo '<td style="border: 1px solid #ddd; padding: 8px;">' . esc_html($row->product_name) . '</td>';
-                        echo '<td style="border: 1px solid #ddd; padding: 8px; text-align: center; font-weight: bold; background-color: #f9f9f9;">' . esc_html($row->quantity) . '</td>';
-                        echo '</tr>';
+                    if (!isset($products[$product_id])) {
+                        $products[$product_id] = array(
+                            'name' => $row->product_name,
+                            'months' => array()
+                        );
                     }
                     
-                    echo '</tbody>';
-                    echo '</table>';
-                    echo '<form method="post" action="">
-                        <input type="hidden" name="export_month" value="' . $selectedMonth . '">
-                        <input type="hidden" name="export_year" value="' . $selectedYear . '">
-                        <input type="hidden" name="export_user_id" value="' . $user_id . '">
-                        <input type="hidden" name="export_filter_type" value="month">
-                        <input type="submit" name="export_button" class="button button-primary" value="Email Forecast">
-                        <input type="submit" name="export_csv_button" class="button button-primary" value="Download Spreadsheet">
-                    </form>';
-                } else {
-                    echo "<p class='notice notice-error'>No forecasts found for this month.</p>";
+                    $products[$product_id]['months'][$month] = $row->quantity;
                 }
-            }
-            elseif ($filter_type == 'quarter') {
-                // Quarter view query
-                $selected_months = isset($quarters[$selectedQuarter]) ? $quarters[$selectedQuarter] : [];
                 
-                // Create a placeholder for the IN clause
-                $placeholders = implode(', ', array_fill(0, count($selected_months), '%s'));
-                
-                $query = $wpdb->prepare("
-                    SELECT
-                        user_id,
-                        user_name,
-                        product_id,
-                        product_name,
-                        in_month,
-                        quantity
-                    FROM $table_name
-                    WHERE user_id = %s
-                    AND in_year = %s
-                    AND in_month IN ($placeholders)
-                    AND quantity > 0
-                    ORDER BY product_name ASC, in_month ASC
-                ", array_merge([$user_id, $selectedYear], $selected_months));
-                
-                $results = $wpdb->get_results($query);
-                $period_label = $selectedQuarter . " " . $selectedYear;
-                
-                // Process results for quarter view
-                if (!empty($results)) {
-                    // Organize data by product and month within the quarter
-                    $products = array();
-                    foreach ($results as $row) {
-                        $product_id = $row->product_id;
-                        $month = $row->in_month;
-                        
-                        if (!isset($products[$product_id])) {
-                            $products[$product_id] = array(
-                                'name' => $row->product_name,
-                                'months' => array()
-                            );
-                        }
-                        
-                        $products[$product_id]['months'][$month] = $row->quantity;
-                    }
-                    
-                    echo '<h3>Forecast for: ' . esc_html($period_label) . '</h3>';
-                    echo '<table class="widefat" style="margin: 20px 0; border-collapse: collapse; width: 100%;">';
-                    echo '<thead>';
+                echo '<h3>Forecast for: ' . esc_html($period_label) . '</h3>';
+                echo '<table class="widefat" style="margin: 20px 0; border-collapse: collapse; width: 100%;">';
+                echo '<thead>';
+                echo '<tr>';
+                echo '<th style="background-color: #f0f0f0; font-weight: bold; border: 1px solid #ddd; padding: 8px;">Product ID</th>';
+                echo '<th style="background-color: #f0f0f0; font-weight: bold; border: 1px solid #ddd; padding: 8px;">Product Name</th>';
+                echo '<th style="background-color: #f0f0f0; font-weight: bold; border: 1px solid #ddd; padding: 8px; text-align: center;">Jan</th>';
+                echo '<th style="background-color: #f0f0f0; font-weight: bold; border: 1px solid #ddd; padding: 8px; text-align: center;">Feb</th>';
+                echo '<th style="background-color: #f0f0f0; font-weight: bold; border: 1px solid #ddd; padding: 8px; text-align: center;">Mar</th>';
+                echo '<th style="background-color: #f0f0f0; font-weight: bold; border: 1px solid #ddd; padding: 8px; text-align: center;">Apr</th>';
+                echo '<th style="background-color: #f0f0f0; font-weight: bold; border: 1px solid #ddd; padding: 8px; text-align: center;">May</th>';
+                echo '<th style="background-color: #f0f0f0; font-weight: bold; border: 1px solid #ddd; padding: 8px; text-align: center;">Jun</th>';
+                echo '<th style="background-color: #f0f0f0; font-weight: bold; border: 1px solid #ddd; padding: 8px; text-align: center;">Jul</th>';
+                echo '<th style="background-color: #f0f0f0; font-weight: bold; border: 1px solid #ddd; padding: 8px; text-align: center;">Aug</th>';
+                echo '<th style="background-color: #f0f0f0; font-weight: bold; border: 1px solid #ddd; padding: 8px; text-align: center;">Sep</th>';
+                echo '<th style="background-color: #f0f0f0; font-weight: bold; border: 1px solid #ddd; padding: 8px; text-align: center;">Oct</th>';
+                echo '<th style="background-color: #f0f0f0; font-weight: bold; border: 1px solid #ddd; padding: 8px; text-align: center;">Nov</th>';
+                echo '<th style="background-color: #f0f0f0; font-weight: bold; border: 1px solid #ddd; padding: 8px; text-align: center;">Dec</th>';
+                echo '<th style="background-color: #f0f0f0; font-weight: bold; border: 1px solid #ddd; padding: 8px; text-align: center;">Total</th>';
+                echo '</tr>';
+                echo '</thead>';
+                echo '<tbody>';
+
+                foreach ($products as $product_id => $product) {
                     echo '<tr>';
-                    echo '<th style="background-color: #f0f0f0; font-weight: bold; border: 1px solid #ddd; padding: 8px;">Product ID</th>';
-                    echo '<th style="background-color: #f0f0f0; font-weight: bold; border: 1px solid #ddd; padding: 8px;">Product Name</th>';
+                    echo '<td style="border: 1px solid #ddd; padding: 8px;">' . esc_html($product_id) . '</td>';
+                    echo '<td style="border: 1px solid #ddd; padding: 8px;">' . esc_html($product['name']) . '</td>';
                     
-                    // Headers for months in this quarter
-                    $month_headers = [
-                        'Q1' => ['Jan', 'Feb', 'Mar'],
-                        'Q2' => ['Apr', 'May', 'Jun'],
-                        'Q3' => ['Jul', 'Aug', 'Sep'],
-                        'Q4' => ['Oct', 'Nov', 'Dec']
-                    ];
-                    
-                    foreach ($month_headers[$selectedQuarter] as $month_header) {
-                        echo '<th style="background-color: #f0f0f0; font-weight: bold; border: 1px solid #ddd; padding: 8px; text-align: center;">' . $month_header . '</th>';
+                    $total = 0;
+                    for ($m = 1; $m <= 12; $m++) {
+                        $month = sprintf('%02d', $m);
+                        $quantity = isset($product['months'][$month]) ? $product['months'][$month] : 0;
+                        $total += $quantity;
+                        echo '<td style="border: 1px solid #ddd; padding: 8px; text-align: center;">' . esc_html($quantity) . '</td>';
                     }
                     
-                    echo '<th style="background-color: #f0f0f0; font-weight: bold; border: 1px solid #ddd; padding: 8px; text-align: center;">Total</th>';
+                    echo '<td style="border: 1px solid #ddd; padding: 8px; text-align: center; font-weight: bold; background-color: #f9f9f9;">' . esc_html($total) . '</td>';
                     echo '</tr>';
-                    echo '</thead>';
-                    echo '<tbody>';
-                    
-                    foreach ($products as $product_id => $product) {
-                        echo '<tr>';
-                        echo '<td style="border: 1px solid #ddd; padding: 8px;">' . esc_html($product_id) . '</td>';
-                        echo '<td style="border: 1px solid #ddd; padding: 8px;">' . esc_html($product['name']) . '</td>';
-                        
-                        $total = 0;
-                        // Display data for each month in the quarter
-                        $quarter_months = $quarters[$selectedQuarter];
-                        foreach ($quarter_months as $month) {
-                            $quantity = isset($product['months'][$month]) ? $product['months'][$month] : 0;
-                            $total += $quantity;
-                            echo '<td style="border: 1px solid #ddd; padding: 8px; text-align: center;">' . esc_html($quantity) . '</td>';
-                        }
-                        
-                        echo '<td style="border: 1px solid #ddd; padding: 8px; text-align: center; font-weight: bold; background-color: #f9f9f9;">' . esc_html($total) . '</td>';
-                        echo '</tr>';
-                    }
-                    
-                    echo '</tbody>';
-                    echo '</table>';
-                    echo '<form method="post" action="">
-                        <input type="hidden" name="export_quarter" value="' . $selectedQuarter . '">
-                        <input type="hidden" name="export_year" value="' . $selectedYear . '">
-                        <input type="hidden" name="export_user_id" value="' . $user_id . '">
-                        <input type="hidden" name="export_filter_type" value="quarter">
-                        <input type="submit" name="export_button" class="button button-primary" value="Email Forecast">
-                        <input type="submit" name="export_csv_button" class="button button-primary" value="Download Spreadsheet">
-                    </form>';
-                } else {
-                    echo "<p class='notice notice-error'>No forecasts found for this quarter.</p>";
                 }
-            }
-            else { // Year view (default)
-                // Query to retrieve data for all months for the selected user and year
-                $query = $wpdb->prepare("
-                    SELECT
-                        user_id,
-                        user_name,
-                        product_id,
-                        product_name,
-                        in_month,
-                        quantity
-                    FROM $table_name
-                    WHERE user_id = %s
-                    AND in_year = %s
-                    AND quantity > 0
-                    ORDER BY product_name ASC, in_month ASC
-                ", $user_id, $selectedYear);
 
-                $results = $wpdb->get_results($query);
-                $period_label = "Year " . $selectedYear;
-
-                if (!empty($results)) {
-                    // Organize data by product and month
-                    $products = array();
-                    foreach ($results as $row) {
-                        $product_id = $row->product_id;
-                        $month = $row->in_month;
-                        
-                        if (!isset($products[$product_id])) {
-                            $products[$product_id] = array(
-                                'name' => $row->product_name,
-                                'months' => array()
-                            );
-                        }
-                        
-                        $products[$product_id]['months'][$month] = $row->quantity;
-                    }
-                    
-                    echo '<h3>Forecast for: ' . esc_html($period_label) . '</h3>';
-                    echo '<table class="widefat" style="margin: 20px 0; border-collapse: collapse; width: 100%;">';
-                    echo '<thead>';
-                    echo '<tr>';
-                    echo '<th style="background-color: #f0f0f0; font-weight: bold; border: 1px solid #ddd; padding: 8px;">Product ID</th>';
-                    echo '<th style="background-color: #f0f0f0; font-weight: bold; border: 1px solid #ddd; padding: 8px;">Product Name</th>';
-                    echo '<th style="background-color: #f0f0f0; font-weight: bold; border: 1px solid #ddd; padding: 8px; text-align: center;">Jan</th>';
-                    echo '<th style="background-color: #f0f0f0; font-weight: bold; border: 1px solid #ddd; padding: 8px; text-align: center;">Feb</th>';
-                    echo '<th style="background-color: #f0f0f0; font-weight: bold; border: 1px solid #ddd; padding: 8px; text-align: center;">Mar</th>';
-                    echo '<th style="background-color: #f0f0f0; font-weight: bold; border: 1px solid #ddd; padding: 8px; text-align: center;">Apr</th>';
-                    echo '<th style="background-color: #f0f0f0; font-weight: bold; border: 1px solid #ddd; padding: 8px; text-align: center;">May</th>';
-                    echo '<th style="background-color: #f0f0f0; font-weight: bold; border: 1px solid #ddd; padding: 8px; text-align: center;">Jun</th>';
-                    echo '<th style="background-color: #f0f0f0; font-weight: bold; border: 1px solid #ddd; padding: 8px; text-align: center;">Jul</th>';
-                    echo '<th style="background-color: #f0f0f0; font-weight: bold; border: 1px solid #ddd; padding: 8px; text-align: center;">Aug</th>';
-                    echo '<th style="background-color: #f0f0f0; font-weight: bold; border: 1px solid #ddd; padding: 8px; text-align: center;">Sep</th>';
-                    echo '<th style="background-color: #f0f0f0; font-weight: bold; border: 1px solid #ddd; padding: 8px; text-align: center;">Oct</th>';
-                    echo '<th style="background-color: #f0f0f0; font-weight: bold; border: 1px solid #ddd; padding: 8px; text-align: center;">Nov</th>';
-                    echo '<th style="background-color: #f0f0f0; font-weight: bold; border: 1px solid #ddd; padding: 8px; text-align: center;">Dec</th>';
-                    echo '<th style="background-color: #f0f0f0; font-weight: bold; border: 1px solid #ddd; padding: 8px; text-align: center;">Total</th>';
-                    echo '</tr>';
-                    echo '</thead>';
-                    echo '<tbody>';
-
-                    foreach ($products as $product_id => $product) {
-                        echo '<tr>';
-                        echo '<td style="border: 1px solid #ddd; padding: 8px;">' . esc_html($product_id) . '</td>';
-                        echo '<td style="border: 1px solid #ddd; padding: 8px;">' . esc_html($product['name']) . '</td>';
-                        
-                        $total = 0;
-                        for ($m = 1; $m <= 12; $m++) {
-                            $month = sprintf('%02d', $m);
-                            $quantity = isset($product['months'][$month]) ? $product['months'][$month] : 0;
-                            $total += $quantity;
-                            echo '<td style="border: 1px solid #ddd; padding: 8px; text-align: center;">' . esc_html($quantity) . '</td>';
-                        }
-                        
-                        echo '<td style="border: 1px solid #ddd; padding: 8px; text-align: center; font-weight: bold; background-color: #f9f9f9;">' . esc_html($total) . '</td>';
-                        echo '</tr>';
-                    }
-
-                    echo '</tbody>';
-                    echo '</table>';
-                    echo '<form method="post" action="">
-                        <input type="hidden" name="export_year" value="' . $selectedYear . '">
-                        <input type="hidden" name="export_user_id" value="' . $user_id . '">
-                        <input type="hidden" name="export_filter_type" value="year">
-                        <input type="submit" name="export_button" class="button button-primary" value="Email Forecast">
-                        <input type="submit" name="export_csv_button" class="button button-primary" value="Download Spreadsheet">
-                    </form>';
-                } else {
-                    echo "<p class='notice notice-error'>The customer hasn't completed any forecasts for this year yet.</p>";
-                }
+                echo '</tbody>';
+                echo '</table>';
+                echo '<form method="post" action="">
+                    <input type="hidden" name="export_year" value="' . $selectedYear . '">
+                    <input type="hidden" name="export_user_id" value="' . $user_id . '">
+                    <input type="hidden" name="export_filter_type" value="year">
+                    <input type="submit" name="export_button" class="button button-primary" value="Email Forecast">
+                    <input type="submit" name="export_csv_button" class="button button-primary" value="Download Spreadsheet">
+                </form>';
+            } else {
+                echo "<p class='notice notice-error'>The customer hasn't completed any forecasts for this year yet.</p>";
             }
 
             echo '</div>';

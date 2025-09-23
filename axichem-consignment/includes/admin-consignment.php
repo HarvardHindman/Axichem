@@ -70,6 +70,80 @@ function consignment_product_search() {
 }
 add_action('wp_ajax_consignment_product_search', 'consignment_product_search');
 
+// AJAX handler for updating consignment stock
+function update_consignment_stock() {
+    check_ajax_referer('axichem-consignment-nonce', 'security');
+    if (!current_user_can('manage_woocommerce') && !current_user_can('manage_options')) {
+        wp_send_json_error('You do not have permission to update consignment stock.');
+        wp_die();
+    }
+    $product_id = isset($_POST['product_id']) ? sanitize_text_field($_POST['product_id']) : '';
+    $user_id = isset($_POST['user_id']) ? intval($_POST['user_id']) : get_current_user_id();
+    $product_name = isset($_POST['product_name']) ? sanitize_text_field($_POST['product_name']) : '';
+    $consignment_qty = isset($_POST['consignment_qty']) ? intval($_POST['consignment_qty']) : 0;
+    if (!$product_id) {
+        wp_send_json_error('Invalid product ID provided.');
+        wp_die();
+    }
+    $result = add_update_consignment_stock($user_id, $product_id, $product_name, $consignment_qty);
+    if ($result) {
+        wp_send_json_success(array(
+            'message' => 'Consignment stock updated successfully',
+            'product_id' => $product_id,
+            'user_id' => $user_id,
+            'product_name' => $product_name,
+            'new_qty' => $consignment_qty
+        ));
+    } else {
+        wp_send_json_error('Failed to update consignment stock in database.');
+    }
+    wp_die();
+}
+add_action('wp_ajax_update_consignment_stock', 'update_consignment_stock');
+
+// AJAX handler for getting consignment stock for a product/user
+function get_consignment_stock() {
+    check_ajax_referer('axichem-consignment-nonce', 'security');
+    $product_id = isset($_POST['product_id']) ? sanitize_text_field($_POST['product_id']) : '';
+    $user_id = isset($_POST['user_id']) ? intval($_POST['user_id']) : get_current_user_id();
+    if (!$product_id) {
+        wp_send_json_error('Invalid product ID provided.');
+        wp_die();
+    }
+    $items = get_user_consignment_stock($user_id);
+    $found = null;
+    foreach ($items as $item) {
+        if ($item->product_id == $product_id) {
+            $found = $item;
+            break;
+        }
+    }
+    if ($found) {
+        wp_send_json_success(array(
+            'product_id' => $found->product_id,
+            'product_name' => $found->product_name,
+            'consignment_qty' => intval($found->stock_quantity)
+        ));
+    } else {
+        wp_send_json_error('Consignment stock not found for this product/user.');
+    }
+    wp_die();
+}
+add_action('wp_ajax_get_consignment_stock', 'get_consignment_stock');
+
+// AJAX handler for getting all consignment stock data (for dashboard views)
+function get_all_consignment_stock_ajax() {
+    check_ajax_referer('axichem-consignment-nonce', 'security');
+    if (!current_user_can('manage_woocommerce') && !current_user_can('manage_options')) {
+        wp_send_json_error('You do not have permission to view consignment stock data.');
+        wp_die();
+    }
+    $data = get_all_consignment_stock();
+    wp_send_json_success($data);
+    wp_die();
+}
+add_action('wp_ajax_get_all_consignment_stock', 'get_all_consignment_stock_ajax');
+
 // Consignment Stock admin page content
 function consignment_stock_admin_page() {
     // Check user capabilities

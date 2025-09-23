@@ -1,8 +1,21 @@
 <?php
-/*
-Plugin Name: Forecast Sheets by Lion&Lamb
-Description: Adds a Forecast tab to the My Account page, where users can fill out the product form.
-*/
+/**
+ * Plugin Name: Axichem Forecast
+ * Description: Customer demand forecasting system for Axichem
+ * Version: 1.0
+ * Author: Axichem
+ * Text Domain: axichem-forecast
+ */
+
+// Exit if accessed directly
+if (!defined('ABSPATH')) {
+    exit;
+}
+
+// Define plugin constants
+define('AXICHEM_FORECAST_VERSION', '1.0');
+define('AXICHEM_FORECAST_PLUGIN_DIR', plugin_dir_path(__FILE__));
+define('AXICHEM_FORECAST_PLUGIN_URL', plugin_dir_url(__FILE__));
 
 // Include files 
 function include_export_data_file()
@@ -12,8 +25,6 @@ function include_export_data_file()
     include_once(plugin_dir_path(__FILE__) . 'includes/frontend-instructions.php');
     include_once(plugin_dir_path(__FILE__) . 'includes/frontend-dashboard.php');
     include_once(plugin_dir_path(__FILE__) . 'includes/dashboard-individuals.php');
-    include_once(plugin_dir_path(__FILE__) . 'includes/dashboard-totals.php');
-    include_once(plugin_dir_path(__FILE__) . 'includes/dashboard-totals-quarters.php');
     include_once(plugin_dir_path(__FILE__) . 'includes/dashboard-message.php');
     include_once(plugin_dir_path(__FILE__) . 'includes/dashboard-shopmanager.php');
 }
