@@ -300,7 +300,7 @@ function axichem_orders_admin_page() {
                                     <th>Date</th>
                                     <th>Product</th>
                                     <th>Quantity</th>
-                                    <th>Amount</th>
+                                    <th>Amount/Item</th>
                                     <th>Delivery Estimation</th>
                                     <th>Actions</th>
                                 </tr>
@@ -320,7 +320,7 @@ function axichem_orders_admin_page() {
                                             <?php endif; ?>
                                             <td><?php echo esc_html($item['product_id']); ?></td>
                                             <td><?php echo esc_html($item['quantity']); ?></td>
-                                            <td><?php echo ($item['amount'] > 0 ? '$' . number_format($item['amount'], 2) : '-'); ?></td>
+                                            <td><?php echo ($item['quantity'] > 0 ? '$' . number_format($item['amount'] / $item['quantity'], 2) : '-'); ?></td>
                                             <td><?php echo esc_html($order_data['status']); ?></td>
                                             <td>
                                                 <a href="?page=axichem-orders&action=edit&id=<?php echo esc_attr($item['id']); ?>&view_user_id=<?php echo esc_attr($selected_user_id); ?>" class="button button-small">Edit</a>

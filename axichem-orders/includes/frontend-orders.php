@@ -116,7 +116,7 @@ function axichem_orders_tab_content() {
                         <th><?php _e('Date', 'axichem-orders'); ?></th>
                         <th><?php _e('Product', 'axichem-orders'); ?></th>
                         <th><?php _e('Quantity', 'axichem-orders'); ?></th>
-                        <th><?php _e('Amount', 'axichem-orders'); ?></th>
+                        <th><?php _e('Amount/Item', 'axichem-orders'); ?></th>
                         <th><?php _e('Delivery Estimation', 'axichem-orders'); ?></th>
                     </tr>
                 </thead>

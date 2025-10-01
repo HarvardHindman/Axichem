@@ -14,15 +14,14 @@ function display_user_ids_page()
     global $wpdb;
 
     // Default to current year if no year is selected
-    $selectedYear = isset($_GET['year']) ? sanitize_text_field($_GET['year']) : '2024';
+    $selectedYear = isset($_GET['year']) ? sanitize_text_field($_GET['year']) : date('Y');
 
-    // Query to retrieve unique user IDs for the selected year
+    // Query to retrieve unique user IDs for any year
     $table_name = $wpdb->prefix . "forecast_sheets"; // Construct table name
-    $query = $wpdb->prepare("
+    $query = "
         SELECT DISTINCT user_id, user_name
         FROM $table_name
-        WHERE in_year = %s
-    ", $selectedYear);
+    ";
 
     $results = $wpdb->get_results($query);
 
@@ -30,22 +29,6 @@ function display_user_ids_page()
     <div class="wrap">
         <h1 class="wp-heading-inline">Forecast Sheets per Customer</h1>
         <hr class="wp-header-end" />
-        
-        <div style="margin: 20px 0; padding: 15px; background: #f8f8f8; border: 1px solid #e0e0e0; border-radius: 4px;">
-            <label for="year"><strong>Select Year:</strong></label>
-            <select id="year" name="selectYear">
-                <?php
-                // Generate options for years
-                $years = array('2024', '2025', '2026');
-                foreach ($years as $year) {
-                    $selected = ($year === $selectedYear) ? 'selected' : '';
-                    echo "<option value='$year' $selected>$year</option>";
-                }
-                ?>
-            </select>
-        </div>
-
-        <h2>Forecasts for year <?php echo $selectedYear; ?></h2>
 
         <div id="dataContainer">
             <div id="loadingMessage" style="display: none;">

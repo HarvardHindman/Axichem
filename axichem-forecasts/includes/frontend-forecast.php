@@ -493,17 +493,20 @@ function custom_account_tab_content()
             max-width: 100%;
             overflow-x: auto;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+            -webkit-overflow-scrolling: touch; /* Smooth scrolling on mobile */
         }
         
         #myTable {
-            min-width: 100%;
-            table-layout: auto;
+            width: 100%;
+            max-width: 1100px; /* Controlled max width */
+            table-layout: fixed; /* Fixed layout for better control */
             margin-bottom: 20px;
             border-collapse: separate;
             border-spacing: 0;
             border-radius: 8px;
             overflow: hidden;
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            font-size: 13px; /* Slightly smaller font for compactness */
         }
         
         #myTable thead {
@@ -512,7 +515,7 @@ function custom_account_tab_content()
         
         #myTable thead th {
             font-weight: 600;
-            letter-spacing: 0.5px;
+            letter-spacing: 0.3px;
             color: #333;
             border-bottom: 2px solid #eaedf0;
             position: sticky;
@@ -520,7 +523,8 @@ function custom_account_tab_content()
             background-color: #f5f7f9;
             z-index: 10;
             text-transform: uppercase;
-            font-size: 12px;
+            font-size: 11px;
+            line-height: 1.2;
         }
         
         #myTable tbody tr {
@@ -533,51 +537,72 @@ function custom_account_tab_content()
         
         #myTable tbody tr:hover {
             background-color: #f0f7ff;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
         }
         
+        /* Optimized column widths */
         #myTable .product__name {
-            min-width: 220px;
-            max-width: 300px;
+            width: 35%; /* Responsive percentage */
+            min-width: 160px; /* Reduced from 220px */
+            max-width: 240px; /* Reduced from 300px */
             font-weight: 500;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
         }
         
         #myTable .product__id {
-            width: 80px;
+            width: 60px; /* Reduced from 80px */
+            min-width: 50px;
             color: #666;
+            font-size: 11px;
         }
         
         #myTable .product__qty {
-            width: 60px;
-            min-width: 60px;
+            width: 42px; /* Reduced from 60px */
+            min-width: 38px;
+        }
+        
+        #myTable .product__total {
+            width: 55px; /* Compact total column */
+            min-width: 50px;
+            background-color: #f2f9ff;
+            font-weight: bold;
+            color: #0073aa;
+            text-align: center;
+        }
+        
+        #myTable .product__action {
+            width: 45px; /* Compact action column */
+            min-width: 40px;
+            text-align: center;
         }
         
         #myTable input.data-quantity {
             width: 100%;
-            min-width: 45px;
+            min-width: 32px; /* Reduced from 45px */
             text-align: center;
-            padding: 8px 4px;
+            padding: 4px 2px; /* Reduced padding */
             border: 1px solid #ddd;
-            border-radius: 4px;
+            border-radius: 3px;
             transition: border-color 0.2s, box-shadow 0.2s;
+            font-size: 12px;
+            box-sizing: border-box;
         }
         
         #myTable input.data-quantity:focus {
             border-color: #4a90e2;
             box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.2);
             outline: none;
+            background-color: #fff;
         }
         
-        #myTable .product__total {
-            background-color: #f2f9ff;
-            font-weight: bold;
-            color: #0073aa;
-        }
-        
-        /* Make sure all month columns have equal width */
+        /* Compact padding for all cells */
         #myTable th, #myTable td {
             white-space: nowrap;
-            padding: 10px 8px;
+            padding: 6px 4px; /* Reduced from 10px 8px */
             border-bottom: 1px solid #eaedf0;
+            vertical-align: middle;
         }
         
         /* Button styling */
@@ -595,13 +620,101 @@ function custom_account_tab_content()
             transform: scale(1.2);
             opacity: 1;
         }
-        /* Improve responsive behavior */
+        /* Enhanced responsive behavior */
         @media screen and (max-width: 1200px) {
             .forecast_body {
-                overflow-x: scroll;
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
             }
+            
             #myTable {
-                min-width: 1200px;
+                min-width: 900px; /* Reduced from 1200px */
+                max-width: none;
+            }
+            
+            /* Slightly reduce column widths on smaller screens */
+            #myTable .product__name {
+                min-width: 140px;
+                max-width: 200px;
+            }
+            
+            #myTable .product__id {
+                width: 50px;
+                min-width: 45px;
+            }
+            
+            #myTable .product__qty {
+                width: 38px;
+                min-width: 35px;
+            }
+        }
+        
+        @media screen and (max-width: 768px) {
+            .forecast_body {
+                margin: 0 -15px; /* Full width on mobile */
+                border-radius: 0;
+            }
+            
+            #myTable {
+                min-width: 700px; /* Compact mobile width */
+                font-size: 12px;
+                border-radius: 0;
+            }
+            
+            #myTable th, #myTable td {
+                padding: 4px 2px; /* Even more compact on mobile */
+            }
+            
+            #myTable thead th {
+                font-size: 10px;
+            }
+            
+            #myTable input.data-quantity {
+                padding: 2px 1px;
+                font-size: 11px;
+            }
+            
+            #myTable .product__name {
+                min-width: 120px;
+                max-width: 180px;
+                font-size: 11px;
+                line-height: 1.3;
+            }
+            
+            #myTable .product__id {
+                display: none; /* Hide ID on very small screens */
+            }
+            
+            /* Show scroll hint on mobile */
+            .forecast_body::after {
+                content: "← Swipe to see all columns →";
+                display: block;
+                text-align: center;
+                color: #666;
+                font-size: 12px;
+                margin-top: 8px;
+                font-style: italic;
+            }
+        }
+        
+        @media screen and (max-width: 480px) {
+            #myTable {
+                min-width: 600px; /* Ultra-compact for small phones */
+            }
+            
+            #myTable .product__name {
+                min-width: 100px;
+                max-width: 140px;
+            }
+            
+            #myTable .product__qty {
+                width: 32px;
+                min-width: 30px;
+            }
+            
+            #myTable .product__total {
+                width: 45px;
+                min-width: 40px;
             }
         }
         
@@ -647,6 +760,69 @@ function custom_account_tab_content()
             font-size: 15px;
             color: #555;
             border-radius: 8px;
+        }
+        
+        /* Enhanced UX improvements */
+        #myTable thead th {
+            cursor: help; /* Show help cursor on hover for tooltips */
+            user-select: none;
+        }
+        
+        /* Visual feedback for interactive elements */
+        #myTable input.data-quantity:hover {
+            border-color: #999;
+            background-color: #fafbfc;
+        }
+        
+        /* Subtle animation for row interactions */
+        #myTable tbody tr:hover input.data-quantity {
+            border-color: #4a90e2;
+            box-shadow: 0 0 0 1px rgba(74, 144, 226, 0.1);
+        }
+        
+        /* Better visual hierarchy */
+        #myTable .product__total {
+            position: relative;
+        }
+        
+        #myTable .product__total::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: linear-gradient(to bottom, #0073aa, #4a90e2);
+        }
+        
+        /* Loading state for quantity inputs */
+        #myTable input.data-quantity.loading {
+            background-color: #f0f0f0;
+            color: #999;
+            pointer-events: none;
+            position: relative;
+        }
+        
+        /* Accessibility improvements */
+        #myTable input.data-quantity:focus-visible {
+            outline: 2px solid #0073aa;
+            outline-offset: 2px;
+        }
+        
+        /* Improved button styling */
+        #myTable .remove-product {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+        }
+        
+        #myTable .remove-product:focus {
+            outline: 2px solid #ff5555;
+            outline-offset: 2px;
         }
         
         /* Search container styling */
@@ -782,22 +958,22 @@ function custom_account_tab_content()
             <table id="myTable" class="display responsive" style="width:100%">
                 <thead>
                     <tr>
-                        <th class="product__id desktop" style="text-align:center; min-width:80px;">Product ID</th>
-                        <th data-priority="1" style="min-width:250px;">Product Name</th>
-                        <th data-priority="2" style="text-align:center; min-width:45px;">Jan</th>
-                        <th data-priority="2" style="text-align:center; min-width:45px;">Feb</th>
-                        <th data-priority="2" style="text-align:center; min-width:45px;">Mar</th>
-                        <th data-priority="2" style="text-align:center; min-width:45px;">Apr</th>
-                        <th data-priority="2" style="text-align:center; min-width:45px;">May</th>
-                        <th data-priority="2" style="text-align:center; min-width:45px;">Jun</th>
-                        <th data-priority="2" style="text-align:center; min-width:45px;">Jul</th>
-                        <th data-priority="2" style="text-align:center; min-width:45px;">Aug</th>
-                        <th data-priority="2" style="text-align:center; min-width:45px;">Sep</th>
-                        <th data-priority="2" style="text-align:center; min-width:45px;">Oct</th>
-                        <th data-priority="2" style="text-align:center; min-width:45px;">Nov</th>
-                        <th data-priority="2" style="text-align:center; min-width:45px;">Dec</th>
-                        <th data-priority="1" style="text-align:center; min-width:70px; background-color: #f9f9f9;">Total</th>
-                        <th data-priority="1" style="text-align:center; min-width:30px;">Action</th>
+                        <th class="product__id desktop" style="text-align:center;">ID</th>
+                        <th class="product__name" data-priority="1">Product Name</th>
+                        <th class="product__qty" data-priority="2" style="text-align:center;" title="January">J</th>
+                        <th class="product__qty" data-priority="2" style="text-align:center;" title="February">F</th>
+                        <th class="product__qty" data-priority="2" style="text-align:center;" title="March">M</th>
+                        <th class="product__qty" data-priority="2" style="text-align:center;" title="April">A</th>
+                        <th class="product__qty" data-priority="2" style="text-align:center;" title="May">M</th>
+                        <th class="product__qty" data-priority="2" style="text-align:center;" title="June">J</th>
+                        <th class="product__qty" data-priority="2" style="text-align:center;" title="July">J</th>
+                        <th class="product__qty" data-priority="2" style="text-align:center;" title="August">A</th>
+                        <th class="product__qty" data-priority="2" style="text-align:center;" title="September">S</th>
+                        <th class="product__qty" data-priority="2" style="text-align:center;" title="October">O</th>
+                        <th class="product__qty" data-priority="2" style="text-align:center;" title="November">N</th>
+                        <th class="product__qty" data-priority="2" style="text-align:center;" title="December">D</th>
+                        <th class="product__total" data-priority="1" style="text-align:center;">Total</th>
+                        <th class="product__action" data-priority="1" style="text-align:center;"></th>
                     </tr>
                 </thead>
                 <tbody>

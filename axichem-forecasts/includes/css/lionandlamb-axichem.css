@@ -266,7 +266,7 @@ button#export-button:hover {
     background-color: #f0f8ff;
 }
 
-/* Responsive */
+/* Enhanced responsive styles and UX improvements */
 @media (max-width:768px) {
     .woocommerce-MyAccount-content-wrapper {
         padding: 0 15px !important
@@ -285,23 +285,75 @@ button#export-button:hover {
     .forecast-buttons {
         flex-direction: column;
         gap: 10px;
+        margin-top: 30px; /* More space for mobile */
     }
     
     .forecast-buttons > * {
-        width: 100%
+        width: 100%;
+        padding: 12px 20px; /* Larger touch targets */
+        font-size: 16px; /* Prevent zoom on iOS */
     }
     
     .product-search-form {
         flex-direction: column;
         align-items: flex-start;
+        gap: 12px;
     }
     
     #browse-all-button {
         width: 100%;
+        padding: 12px 20px;
+        font-size: 16px;
     }
     
     .forecast-table {
         display: block;
         overflow-x: auto;
     }
+    
+    /* Improve mobile scroll indicators */
+    .forecast_body {
+        position: relative;
+    }
+    
+    .forecast_body::-webkit-scrollbar {
+        height: 8px;
+    }
+    
+    .forecast_body::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 4px;
+    }
+    
+    .forecast_body::-webkit-scrollbar-thumb {
+        background: #c1c1c1;
+        border-radius: 4px;
+    }
+    
+    .forecast_body::-webkit-scrollbar-thumb:hover {
+        background: #a1a1a1;
+    }
+}
+
+/* Additional modern enhancements */
+.data-quantity {
+    transition: all 0.2s ease !important;
+}
+
+/* Improved focus states for accessibility */
+button:focus-visible,
+input:focus-visible {
+    outline: 2px solid #0073aa !important;
+    outline-offset: 2px !important;
+}
+
+/* Better visual feedback */
+.forecast-buttons button:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.forecast-buttons button:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
